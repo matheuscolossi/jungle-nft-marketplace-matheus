@@ -6,3 +6,7 @@ dist/
 playwright-report/
 test-results/
 *.log
+reports/test-results/
+reports/playwright/data/
+*.tsbuildinfo
+.openai/site-artifact.tar.gz

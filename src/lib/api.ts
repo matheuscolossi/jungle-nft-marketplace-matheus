@@ -1,1 +1,11 @@
-import axios from 'axios';export const api=axios.create({baseURL:'/api',timeout:10000});export const err=(e:unknown):string=>axios.isAxiosError(e)?e.response?.data?.message||(e.code==='ECONNABORTED'?'A resposta demorou. Tente novamente com segurança.':'Não foi possível conectar. Tente novamente.'):e instanceof Error?e.message:'Ocorreu um erro inesperado.';
+import axios from "axios";
+export const api = axios.create({ baseURL: "/api", timeout: 10000 });
+export const err = (e: unknown): string =>
+  axios.isAxiosError(e)
+    ? e.response?.data?.message ||
+      (e.code === "ECONNABORTED"
+        ? "A resposta demorou. Tente novamente com segurança."
+        : "Não foi possível conectar. Tente novamente.")
+    : e instanceof Error
+      ? e.message
+      : "Ocorreu um erro inesperado.";

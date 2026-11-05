@@ -1,1 +1,64 @@
-import {createContext,useContext,useCallback,useState,useEffect,type ReactNode} from 'react';import {api} from './api';import {queryClient} from './query';import type {User} from '../types';type Session={user:User|null;loading:boolean;refresh:()=>Promise<void>;logout:()=>Promise<void>};const Context=createContext<Session>(null!);export const useSession=()=>useContext(Context);export function SessionProvider({children}:{children:ReactNode}){const [user,setUser]=useState<User|null>(null),[loading,setLoading]=useState(true);const refresh=useCallback(async()=>{try{const {data}=await api.get<{user:User|null}>('/session');setUser(old=>{if(old?.id!==data.user?.id)queryClient.clear();return data.user})}catch{setUser(null)}finally{setLoading(false)}},[]);const logout=async()=>{await api.delete('/session');queryClient.clear();setUser(null)};useEffect(()=>{void refresh();const id=api.interceptors.response.use(r=>r,e=>{if(e.response?.status===401){setUser(null);queryClient.clear()}return Promise.reject(e)});return()=>api.interceptors.response.eject(id)},[refresh]);return <Context.Provider value={{user,loading,refresh,logout}}>{children}</Context.Provider>};
+import { createContext, useContext, useCallback, useState, useEffect, useRef, type ReactNode } from 'react'
+import { api } from './api'
+import { queryClient } from './query'
+import type { User } from '../types'
+
+type Session = { user: User | null; loading: boolean; refresh: () => Promise<void>; logout: () => Promise<void> }
+const Context = createContext<Session>(null!)
+export const useSession = () => useContext(Context)
+
+export function SessionProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<{ user: User | null; loading: boolean }>({ user: null, loading: true })
+  const currentUser = useRef<User | null>(null)
+  const pending = useRef<AbortController | null>(null)
+  const generation = useRef(0)
+
+  const applySession = useCallback((next: User | null) => {
+    const changed = currentUser.current?.id !== next?.id
+    currentUser.current = next
+    setSession({ user: next, loading: false })
+    // Cache notifications must run outside a React state updater.
+    if (changed) queryClient.clear()
+  }, [])
+
+  const refresh = useCallback(async () => {
+    pending.current?.abort()
+    const controller = new AbortController()
+    pending.current = controller
+    const requestGeneration = ++generation.current
+    try {
+      const { data } = await api.get<{ user: User | null }>('/session', { signal: controller.signal })
+      if (!controller.signal.aborted && requestGeneration === generation.current) applySession(data.user)
+    } catch {
+      if (!controller.signal.aborted && requestGeneration === generation.current) applySession(null)
+    } finally {
+      if (pending.current === controller) pending.current = null
+    }
+  }, [applySession])
+
+  const logout = useCallback(async () => {
+    await api.delete('/session')
+    generation.current++
+    pending.current?.abort()
+    applySession(null)
+  }, [applySession])
+
+  useEffect(() => {
+    const id = api.interceptors.response.use(response => response, error => {
+      if (error.response?.status === 401) {
+        generation.current++
+        pending.current?.abort()
+        applySession(null)
+      }
+      return Promise.reject(error)
+    })
+    void refresh()
+    return () => {
+      generation.current++
+      pending.current?.abort()
+      api.interceptors.response.eject(id)
+    }
+  }, [refresh, applySession])
+
+  return <Context.Provider value={{ ...session, refresh, logout }}>{children}</Context.Provider>
+}
