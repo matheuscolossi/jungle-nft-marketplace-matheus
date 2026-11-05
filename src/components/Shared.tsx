@@ -4,6 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, Minus, Plus } from "lucide-react";
 import { api, err } from "../lib/api";
 import { useSession } from "../lib/session";
+import { availableStock } from "../lib/availability";
 import type { Nft } from "../types";
 import { Button } from "./ui/button";
 
@@ -73,8 +74,8 @@ export function Quantity({
         size="icon"
         variant="ghost"
         aria-label="Diminuir quantidade"
-        disabled={disabled || value <= 1}
-        onClick={() => onChange(value - 1)}
+        disabled={disabled || value <= 1 || max < 1}
+        onClick={() => onChange(Math.min(value - 1, max))}
       >
         <Minus size={14} />
       </Button>
@@ -202,6 +203,7 @@ export function NftCard({
   nft: Nft;
   priority?: boolean;
 }) {
+  const stock = availableStock(nft);
   return (
     <article className="nft-card" data-testid="nft-card">
       <div className="card-art">
@@ -221,7 +223,7 @@ export function NftCard({
         <div className="card-favorite">
           <Favorite id={nft.id} />
         </div>
-        {nft.stock === 0 && <span className="stock-badge">Esgotado</span>}
+        {stock === 0 && <span className="stock-badge">Esgotado</span>}
       </div>
       <p className="eyebrow">{nft.collection}</p>
       <h3>
@@ -231,7 +233,7 @@ export function NftCard({
       </h3>
       <div className="card-meta">
         <span>{eth(nft.price)}</span>
-        <span>{nft.stock} edições</span>
+        <span>{stock} edições</span>
       </div>
     </article>
   );
