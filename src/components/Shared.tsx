@@ -110,20 +110,31 @@ export function Favorite({ id }: { id: string }) {
   currentUserId.current = user?.id;
   useEffect(() => {
     mounted.current = true;
-    return () => { mounted.current = false; pending.current?.abort() };
+    return () => {
+      mounted.current = false;
+      pending.current?.abort();
+    };
   }, [user?.id]);
   const mutation = useMutation({
     mutationFn: async ({ next, userId }: { next: boolean; userId: string }) => {
-      if (!mounted.current || currentUserId.current !== userId) throw new Error('The session changed.');
+      if (!mounted.current || currentUserId.current !== userId)
+        throw new Error("The session changed.");
       const controller = new AbortController();
       pending.current = controller;
-      return (await api.request<string[]>({ url: `/favorites/${id}`, method: next ? 'POST' : 'DELETE', signal: controller.signal })).data;
+      return (
+        await api.request<string[]>({
+          url: `/favorites/${id}`,
+          method: next ? "POST" : "DELETE",
+          signal: controller.signal,
+        })
+      ).data;
     },
     onMutate: async ({ next, userId }) => {
-      const mutationKey = ['favorites', userId];
+      const mutationKey = ["favorites", userId];
       await client.cancelQueries({ queryKey: mutationKey });
       const old = client.getQueryData<string[]>(mutationKey) ?? [];
-      if (!mounted.current || currentUserId.current !== userId) return { old, key: mutationKey };
+      if (!mounted.current || currentUserId.current !== userId)
+        return { old, key: mutationKey };
       client.setQueryData<string[]>(
         mutationKey,
         next ? Array.from(new Set([...old, id])) : old.filter((x) => x !== id),
@@ -131,11 +142,28 @@ export function Favorite({ id }: { id: string }) {
       return { old, key: mutationKey };
     },
     onError: (_e, variables, context) => {
-      if (!context || !mounted.current || currentUserId.current !== variables.userId) return;
-      client.setQueryData<string[]>(context.key, current => context.old.includes(id) ? Array.from(new Set([...(current ?? []), id])) : (current ?? []).filter(value => value !== id));
+      if (
+        !context ||
+        !mounted.current ||
+        currentUserId.current !== variables.userId
+      )
+        return;
+      client.setQueryData<string[]>(context.key, (current) =>
+        context.old.includes(id)
+          ? Array.from(new Set([...(current ?? []), id]))
+          : (current ?? []).filter((value) => value !== id),
+      );
     },
-    onSuccess: (data, variables) => { if (mounted.current && currentUserId.current === variables.userId) client.setQueryData(['favorites', variables.userId], data) },
-    onSettled: (_data, _error, variables) => { if (mounted.current && currentUserId.current === variables.userId) void client.invalidateQueries({ queryKey: ['favorites', variables.userId] }) },
+    onSuccess: (data, variables) => {
+      if (mounted.current && currentUserId.current === variables.userId)
+        client.setQueryData(["favorites", variables.userId], data);
+    },
+    onSettled: (_data, _error, variables) => {
+      if (mounted.current && currentUserId.current === variables.userId)
+        void client.invalidateQueries({
+          queryKey: ["favorites", variables.userId],
+        });
+    },
   });
   return (
     <>

@@ -216,8 +216,7 @@ export function AccountSidebar() {
         <button
           type="button"
           onClick={async () => {
-            await logout();
-            await navigate({ to: "/" });
+            await logout(() => navigate({ to: "/" }));
           }}
         >
           <LogOut size={16} aria-hidden="true" />

@@ -1,12 +1,12 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   Link,
-  Navigate,
   Outlet,
   createRootRoute,
   createRoute,
   createRouter,
   useLocation,
+  useNavigate,
   type SearchSchemaInput,
 } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -142,7 +142,14 @@ function Demo() {
     setWorking(true);
     try {
       if (body) await api.patch("/demo", body);
-      else await api.delete("/demo");
+      else {
+        await api.delete("/demo");
+        Object.keys(sessionStorage)
+          .filter((key) => key.startsWith("kurio-"))
+          .forEach((key) => sessionStorage.removeItem(key));
+        window.location.assign("/");
+        return;
+      }
       await client.invalidateQueries();
       await refresh();
       setNotice(body ? "Cenário atualizado." : "Demonstração restaurada.");
@@ -402,14 +409,24 @@ function Root() {
   );
 }
 function Private({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useSession(),
-    location = useLocation();
-  if (loading) return <Skeleton detail />;
-  return user ? (
-    children
-  ) : (
-    <Navigate to="/login" search={{ redirect: location.href }} replace />
-  );
+  const { user, loading, loggingOut } = useSession(),
+    location = useLocation(),
+    navigate = useNavigate();
+  // The router exposes its next location before the previous match unmounts.
+  // Keep the protected destination stable so login URLs never nest recursively.
+  const returnTo = useRef(location.href);
+  const redirecting = useRef(false);
+  useEffect(() => {
+    if (!loading && !loggingOut && !user && !redirecting.current) {
+      redirecting.current = true;
+      void navigate({
+        to: "/login",
+        search: { redirect: returnTo.current },
+        replace: true,
+      });
+    }
+  }, [loading, loggingOut, user, navigate]);
+  return loading || !user ? <Skeleton detail /> : children;
 }
 function FavoritesPage() {
   const { user } = useSession();

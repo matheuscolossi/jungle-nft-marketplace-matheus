@@ -2548,3 +2548,5 @@ input:invalid:not(:placeholder-shown):focus {
     color: var(--muted);
   }
 }
+
+.summary > a.btn-primary, .summary > a.btn-primary:hover { color: #20140d; }
