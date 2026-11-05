@@ -10,3 +10,4 @@ reports/test-results/
 reports/playwright/data/
 *.tsbuildinfo
 .openai/site-artifact.tar.gz
+reports/visual-checks/
