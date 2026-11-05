@@ -5,7 +5,7 @@ const collections = ['Cosmic Visions', 'Wild Souls', 'Digital Expressions', 'Fut
 const categories = ['Art', 'Photography', 'Gaming', 'Collectibles']
 export const nftFixtures: Nft[] = titles.map((name, i) => {
   const price = ['0.45', '0.82', '1.25', '0.18', '2.4', '0.65'][i % 6]
-  const image = `/assets/nft-${(i % 8) + 1}.svg`
+  const image = i % 8 === 0 ? '/assets/emerald-ape.png' : `/assets/nft-${(i % 8) + 1}.svg`
   return { id: String(i + 1), name, collection: collections[i % 4], creator: ['Alex Morgan', 'Sofia Chen', 'Lucas Silva', 'Maya Rivera'][i % 4], category: categories[i % 4], description: 'A unique piece of digital art exploring the intersection of imagination, nature and technology. Collect a limited edition and become part of the story.', image, images: [image, `/assets/nft-${((i + 2) % 8) + 1}.svg`], price, stock: i === 23 ? 0 : 8 + i % 5, editions: [{ id: 'standard', name: 'Standard edition', stock: i === 23 ? 0 : 8 + i % 5, price }, { id: 'rare', name: 'Rare edition', stock: i % 5 === 0 ? 0 : 3, price: ['1.45', '1.82', '2.25', '1.18', '3.4', '1.65'][i % 6] }], version: 1, featured: i < 4, likes: 24 + i * 13 }
 })
 export const userFixtures: User[] = [
