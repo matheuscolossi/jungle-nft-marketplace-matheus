@@ -90,7 +90,11 @@ function Header() {
           />
           {connection === "connected" ? "Ao vivo" : "Reconectando"}
         </span>
-        <Link to="/cart" className="cart-link" aria-label="Carrinho">
+        <Link
+          to="/cart"
+          className="cart-link"
+          aria-label={`Carrinho, ${cart.data?.items.reduce((total, item) => total + item.quantity, 0) ?? 0} itens`}
+        >
           <ShoppingCart size={20} />
           <span>
             {cart.data?.items.reduce((n, i) => n + i.quantity, 0) ?? 0}

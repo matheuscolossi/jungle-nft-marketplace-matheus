@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@source "./";
 @theme {
   --color-background: #160f0b;
   --color-foreground: #eee8df;
@@ -210,9 +211,7 @@ input:invalid:not(:placeholder-shown):focus {
   place-items: center;
 }
 .btn {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
+  @apply inline-flex items-center justify-center;
   gap: 9px;
   border: 1px solid transparent;
   border-radius: 3px;
@@ -276,10 +275,9 @@ input:invalid:not(:placeholder-shown):focus {
   font-weight: 700;
 }
 .hero {
-  display: grid;
+  @apply grid items-center;
   grid-template-columns: 1.1fr 0.85fr;
   gap: 90px;
-  align-items: center;
   padding: 48px 30px 68px;
 }
 .hero-copy h1 {
@@ -865,10 +863,9 @@ input:invalid:not(:placeholder-shown):focus {
   font-size: 10px;
 }
 .purchase-layout {
-  display: grid;
+  @apply grid items-start;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 35px;
-  align-items: start;
 }
 .panel {
   background: #271a14;
@@ -1030,8 +1027,7 @@ input:invalid:not(:placeholder-shown):focus {
   gap: 20px;
 }
 .field {
-  display: flex;
-  flex-direction: column;
+  @apply flex flex-col;
   gap: 7px;
   font-size: 11px;
   margin-bottom: 18px;
@@ -2549,4 +2545,39 @@ input:invalid:not(:placeholder-shown):focus {
   }
 }
 
-.summary > a.btn-primary, .summary > a.btn-primary:hover { color: #20140d; }
+.summary > a.btn-primary,
+.summary > a.btn-primary:hover {
+  color: #20140d;
+}
+
+.footer-links a {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+.demo-trigger {
+  min-height: 24px;
+}
+
+main {
+  display: flow-root;
+}
+.detail-loading {
+  min-height: 1350px;
+}
+.detail-loading-copy {
+  display: grid;
+  gap: 22px;
+  margin-top: 35px;
+}
+.detail-loading-copy .skeleton {
+  min-height: 110px;
+}
+.connection-status {
+  min-width: 76px;
+}
+@media (max-width: 600px) {
+  .detail-loading {
+    min-height: 1850px;
+  }
+}

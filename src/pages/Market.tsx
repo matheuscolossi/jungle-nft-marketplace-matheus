@@ -331,9 +331,15 @@ export function DetailPage() {
   });
   if (result.isPending)
     return (
-      <div className="detail-grid">
-        <Skeleton detail />
-        <Skeleton detail />
+      <div className="detail-loading">
+        <div className="detail-grid">
+          <Skeleton detail />
+          <Skeleton detail />
+        </div>
+        <div className="detail-loading-copy">
+          <Skeleton />
+          <Skeleton />
+        </div>
       </div>
     );
   if (result.isError)
