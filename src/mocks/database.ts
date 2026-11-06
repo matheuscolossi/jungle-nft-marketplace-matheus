@@ -15,7 +15,7 @@ import { availableStock } from "../lib/availability";
 import { nftFixtures, userFixtures, walletFixtures } from "./fixtures";
 
 const KEY = "jungle-demo-v1";
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 interface StoredCart {
   items: { id: string; nftId: string; editionId: string; quantity: number }[];
   coupon: string;
@@ -90,18 +90,26 @@ function migratedWallet(wallet: Wallet, user: User): Wallet {
 function migrateDatabase() {
   if (db.schemaVersion >= SCHEMA_VERSION) return;
   // A mesma chave preserva sessão, carrinhos e pedidos de quem já abriu a demo.
-  db.accounts.forEach((owner, index) => {
-    const fixture = userFixtures.find((item) => item.id === owner.user.id);
-    owner.user.username ??= fixture?.username ?? `collector-${index + 1}`;
-    owner.user.ensName ??=
-      fixture?.ensName ?? defaultEnsName(owner.user.username);
-    owner.user.walletNickname ??= owner.wallets[0]?.name ?? "Main wallet";
-    owner.wallets = owner.wallets.map((wallet) =>
-      migratedWallet(wallet, owner.user),
-    );
-  });
+  if (!db.schemaVersion || db.schemaVersion < 2) {
+    db.accounts.forEach((owner, index) => {
+      const fixture = userFixtures.find((item) => item.id === owner.user.id);
+      owner.user.username ??= fixture?.username ?? `collector-${index + 1}`;
+      owner.user.ensName ??=
+        fixture?.ensName ?? defaultEnsName(owner.user.username);
+      owner.user.walletNickname ??= owner.wallets[0]?.name ?? "Main wallet";
+      owner.wallets = owner.wallets.map((wallet) =>
+        migratedWallet(wallet, owner.user),
+      );
+    });
+    db.nfts.forEach((nft) => {
+      nft.stock = availableStock(nft);
+    });
+  }
   db.nfts.forEach((nft) => {
-    nft.stock = availableStock(nft);
+    const fixture = nftFixtures.find((item) => item.id === nft.id);
+    if (!fixture) return;
+    nft.image = fixture.image;
+    nft.images = [...fixture.images];
   });
   // Recibos e tentativas continuam com o snapshot original, inclusive os legados.
   db.schemaVersion = SCHEMA_VERSION;

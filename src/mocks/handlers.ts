@@ -280,8 +280,10 @@ export const handlers = [
             ? a.name.localeCompare(b.name)
             : sort === "newest"
               ? Number(b.id) - Number(a.id)
-              : Number(b.featured) - Number(a.featured) ||
-                Number(a.id) - Number(b.id),
+              : sort === "popular"
+                ? b.likes - a.likes
+                : Number(b.featured) - Number(a.featured) ||
+                  Number(a.id) - Number(b.id),
     );
     const total = items.length;
     return {

@@ -37,16 +37,16 @@ const categories = ["Art", "Photography", "Gaming", "Collectibles"];
 export const nftFixtures: Nft[] = titles.map((name, i) => {
   const price = ["0.45", "0.82", "1.25", "0.18", "2.4", "0.65"][i % 6];
   const artwork = [
-    "emerald-ape",
+    "hero-ape",
     "sage-nomad",
-    "ivory-baron",
+    "neon-vessel",
     "sage-nomad",
     "sage-nomad",
-    "ivory-baron",
+    "neon-vessel",
     "golden-beat",
     "golden-beat",
   ];
-  const image = `/assets/${artwork[i % 8]}.webp`;
+  const image = `/assets/figma/${artwork[i % 8]}.webp`;
   const editions = [
     {
       id: "standard",
@@ -70,7 +70,7 @@ export const nftFixtures: Nft[] = titles.map((name, i) => {
     description:
       "A unique piece of digital art exploring the intersection of imagination, nature and technology. Collect a limited edition and become part of the story.",
     image,
-    images: [image, `/assets/${artwork[(i + 2) % 8]}.webp`],
+    images: [image, `/assets/figma/${artwork[(i + 2) % 8]}.webp`],
     price,
     stock: availableStock({ editions }),
     editions,
