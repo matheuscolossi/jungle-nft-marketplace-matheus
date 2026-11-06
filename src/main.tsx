@@ -11,11 +11,12 @@ import "./checkout.css";
 import "./account.css";
 
 async function start() {
-  if (import.meta.env.VITE_ENABLE_MOCKS !== "false") {
-    const { startMocks } = await import("./mocks/browser");
-    await startMocks();
-  }
-  const { router } = await import("./App");
+  const appReady = import("./App");
+  const mocksReady =
+    import.meta.env.VITE_ENABLE_MOCKS !== "false"
+      ? import("./mocks/browser").then(({ startMocks }) => startMocks())
+      : Promise.resolve();
+  const [{ router }] = await Promise.all([appReady, mocksReady]);
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>

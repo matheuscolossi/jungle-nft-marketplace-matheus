@@ -178,3 +178,9 @@ const markdown = [
 ];
 await fs.writeFile(path.join(output, "README.md"), `${markdown.join("\n")}\n`);
 console.log(JSON.stringify({ medians, output }, null, 2));
+if (
+  medians.some((result) => result.belowTarget.length) ||
+  results.some((result) => result.runtimeError)
+) {
+  process.exitCode = 1;
+}
