@@ -724,8 +724,8 @@
 }
 
 .auth-identity-fields {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 .auth-panel .auth-tabs a {
@@ -764,4 +764,23 @@
       flex-basis: 128px;
     }
   }
+}
+
+@container viewport (min-width: 801px) {
+  .auth-register .auth-panel {
+    top: 158px;
+    height: 656px;
+    border-radius: 8px;
+  }
+  .auth-composition {
+    min-height: 0;
+  }
+  .auth-composition .market-backdrop {
+    height: auto;
+  }
+}
+.avatar-actions label.btn {
+  width: max-content;
+  max-width: 100%;
+  padding: 10px 16px;
 }

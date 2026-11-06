@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   Link,
   Outlet,
@@ -22,8 +29,6 @@ import {
 } from "lucide-react";
 import { MarketPage, DetailPage, type CatalogSearch } from "./pages/Market";
 import { CartPage, OrderPage, useCart } from "./pages/Purchase";
-import { CheckoutPage } from "./pages/Checkout";
-import { AuthPage, ProfilePage, WalletsPage } from "./pages/Account";
 import { Button } from "./components/ui/button";
 import { Empty, ErrorState, NftCard, Skeleton } from "./components/Shared";
 import { api, err } from "./lib/api";
@@ -34,6 +39,19 @@ import {
   subscribeConnection,
 } from "./lib/realtime";
 import type { Nft, PageResult, Scenario } from "./types";
+
+const CheckoutPage = lazy(() =>
+  import("./pages/Checkout").then((page) => ({ default: page.CheckoutPage })),
+);
+const AuthPage = lazy(() =>
+  import("./pages/Account").then((page) => ({ default: page.AuthPage })),
+);
+const ProfilePage = lazy(() =>
+  import("./pages/Account").then((page) => ({ default: page.ProfilePage })),
+);
+const WalletsPage = lazy(() =>
+  import("./pages/Account").then((page) => ({ default: page.WalletsPage })),
+);
 
 function Header() {
   const connection = useSyncExternalStore(
@@ -487,7 +505,9 @@ function Root() {
         </div>
       )}
       <main id="main" tabIndex={-1}>
-        <Outlet />
+        <Suspense fallback={<Skeleton detail />}>
+          <Outlet />
+        </Suspense>
       </main>
       {(["/profile", "/wallets"].includes(location.pathname) ||
         location.pathname.startsWith("/order/")) && (
