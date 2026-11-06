@@ -12,7 +12,7 @@ All eight visual references were regenerated after the UI review. The dedicated 
 
 Typecheck, lint and production build passed for the current application source. The [GitHub Actions run](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42211615877) passed types, lint, build and **86 tests with four intentional skips in 9.6 minutes**, without snapshot updates. It checked commit `98b3ebf`, whose only change after application commit `b3027e7` is the README.
 
-The twelve completed Lighthouse measurements meet every requested threshold by median. The table below records the current measurements; the individual home-mobile performance scores were 88, 91 and 90, giving a median of 90. No test browsers ran concurrently with this audit. Public deployment validation remains pending until a final Vercel URL is available.
+The twelve completed Lighthouse measurements meet every requested threshold by median. The table below records the current measurements; the individual home-mobile performance scores were 88, 91 and 90, giving a median of 90. No test browsers ran concurrently with this audit. Public deployment checks are recorded in the publication section below; Lighthouse results in this document remain local measurements.
 
 ## Commands
 
@@ -93,7 +93,17 @@ The Windows GitHub Actions workflow installs dependencies, checks types/lint, bu
 
 The [GitHub Actions run](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42211615877) passed types, lint, build and **86 tests with four intentional skips in 9.6 minutes**, without snapshot updates. It checked commit `98b3ebf`, whose only change after application commit `b3027e7` is the README.
 
-The application has SPA fallback configuration and a locally served MSW worker. After deployment, validate anonymous access, direct/internal-route refresh, recovered session, scenarios, Socket.IO and a complete purchase at the public URL. No final public URL has been confirmed; deployment verification remains pending.
+Production URL: [https://jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app). Vercel reported READY for production deployment `dpl_BFsnJ8BJn2PpXuRbUzJBXFys5NEK`, source `4e647fef4cc76ddc875a589c30e6e1621fbea5ca`. Anonymous HTTP requests returned 200 for home, `/nft/1`, `/checkout` and the MSW worker; the worker retained JavaScript content type and no-cache.
+
+The public E2E run passed 84 tests with four intentional skips in 4.9 minutes. Two recovery checks failed because the test called browser fetch immediately after reload, before MSW initialization completed. The test now waits for the confirmed receipt to reappear before querying orders. Both desktop/mobile recovery tests passed on targeted rerun in 18.3 seconds. No application code changed. All eight visual comparisons passed without snapshot updates. The local HTML report above remains the clean local run; public list-reporter evidence is [reports/production-validation.txt](../reports/production-validation.txt).
+
+Commands used against production:
+
+```sh
+# Set E2E_BASE_URL=https://jungle-nft-marketplace-matheus.vercel.app
+npx playwright test --workers=2 --reporter=list --output=reports/visual-checks/production-e2e
+npx playwright test tests/purchase.spec.ts --grep=response.loss --workers=2 --reporter=list --output=reports/visual-checks/production-recovery
+```
 
 ## Historical checkpoints
 

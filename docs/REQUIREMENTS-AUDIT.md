@@ -8,7 +8,7 @@ Em 6 de novembro, a [cópia do Figma fornecida pelo usuário](https://www.figma.
 
 A suíte atual lista 90 entradas: 86 execuções e quatro skips intencionais. A execução completa concluiu **86 testes aprovados e quatro skips intencionais em 4,6 minutos**, sem atualização de snapshots; as oito referências visuais corresponderam. Os oito baselines foram regenerados, com 4/4 cenários visuais aprovados. As 12 medições Lighthouse concluíram todas as metas pelas medianas: performance 90 mobile/99 desktop em início/detalhe e 100 em acessibilidade, boas práticas e SEO. A [execução no GitHub Actions](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42211615877) passou em tipos, lint, build e **86 testes, com quatro skips intencionais em 9,6 minutos**. O commit `98b3ebf` mantém o código de aplicação `b3027e7` e altera somente o README.
 
-Esta revisão compara os 12 tópicos do enunciado anexado com o código e os testes atuais. A publicação pública na Vercel também permanece pendente. Não se afirma atendimento integral, igualdade pixel a pixel nem uma nota presumida.
+Esta revisão compara os 12 tópicos do enunciado anexado com o código e os testes atuais. A publicação pública na Vercel foi conferida em https://jungle-nft-marketplace-matheus.vercel.app. Não se afirma atendimento integral, igualdade pixel a pixel nem uma nota presumida.
 
 **Legenda:** “Implementado” descreve o código encontrado e não substitui o resultado da execução final. “Parcial” identifica uma diferença conhecida. “Pendente” indica uma condição de entrega ainda não cumprida. As evidências concluídas e suas condições ficam em [VALIDATION.md](VALIDATION.md).
 
@@ -26,8 +26,8 @@ Esta revisão compara os 12 tópicos do enunciado anexado com o código e os tes
 | **8. Interface, responsividade e acessibilidade** | Revista e verificada | Assets originais, Roboto Mono local, hero, catálogo, promoções, diário, autenticação desktop/mobile, conta e pagamento revistos a partir do Figma. Há labels, erros associados, skeletons, movimento reduzido, foco, anúncios e diálogos. Reflow considera a largura efetiva do conteúdo. Os oito baselines foram regenerados e quatro cenários visuais passaram. Acessibilidade Lighthouse teve mediana 100 nos quatro grupos. A execução completa atual está registrada no resultado acima. |
 | **9. Testes Playwright** | 86 aprovados; quatro skips intencionais | A suíte lista 90 entradas: 86 execuções aprovadas e quatro skips intencionais das varreduras já exercitadas com dimensões explícitas. Além das regressões anteriores, inclui popularidade e migração das artes com preservação de dados e recibos. Oito baselines cobrem início/detalhe/carrinho/pagamento. Foram regenerados e os quatro cenários visuais passaram; a execução completa atual está registrada no resultado acima. |
 | **10. Performance e Lighthouse** | Metas atendidas pelas medianas | Doze medições atuais, três por início/detalhe e mobile/desktop: performance 90 mobile/99 desktop; acessibilidade, boas práticas e SEO 100. HTML/JSON, ambiente, versões e LCP/CLS/TBT estão registrados. O script falha com erro de execução ou mediana abaixo da meta. A mediana mobile está no limite; condições publicadas podem diferir. |
-| **11. Critérios de avaliação** | Sem pontuação presumida | Há uso real da stack e compra integrada à simulação. REST/MSW e Socket.IO participam dos testes. Os baselines foram revistos e a auditoria atingiu as metas. A execução E2E completa e a CI atuais estão no resultado acima. Publicação e validação pública ainda são necessárias; revisão estática ou uma nota presumida não substituem essas evidências. |
-| **12. Entrega** | Pendente | Código, lockfile, assets, mocks, fixtures, testes, CI/auditoria e documentação existem. Falta publicar a versão correspondente e validar acesso público, refresh das rotas, sessão, mocks, eventos e compra no endereço final. O deploy é obrigatório. |
+| **11. Critérios de avaliação** | Sem pontuação presumida | Há uso real da stack e compra integrada à simulação. REST/MSW e Socket.IO participam dos testes. Os baselines foram revistos e a auditoria atingiu as metas. A execução E2E completa e a CI atuais estão no resultado acima. A publicação foi conferida nos mesmos fluxos. A avaliação final cabe aos avaliadores. |
+| **12. Entrega** | Publicada e conferida | Código, lockfile, assets, mocks, fixtures, testes, CI/auditoria e documentação versionados; aplicação pública na Vercel, com acesso anônimo, refresh, sessão, mocks, eventos e compra conferidos. URL e resultado detalhado abaixo. |
 
 ## Correções da auditoria inicial
 
@@ -41,7 +41,7 @@ A auditoria de 5 de novembro avaliou bf3aa8401acb9886be969f2b7838ab6f04a08ccd. S
 - **Cobertura:** testes acrescentam ordenação pelos preços exibidos, limites inclusivos, loaders de catálogo/resumo, offline/retry, carteira inválida/conflito, senhas curtas/divergentes, preservação de adições após snapshot, compra por teclado e telas carregadas em tablet/zoom.
 - **Catálogo e compatibilidade:** o tab Em alta usa sort=popular, ordenado por likes decrescente na API. A migração para schema 3 substitui apenas os caminhos das artes do catálogo; preços, estoques, versões, sessão, carrinhos, favoritos, cotações, pedidos e tentativas idempotentes existentes permanecem preservados.
 
-Contratos, migração, cache, sessão e decisões estão em [ARCHITECTURE.md](../ARCHITECTURE.md). A execução local atual concluiu os 86 testes sem falhas, incluindo as comparações visuais. A publicação deve ser validada no endereço final.
+Contratos, migração, cache, sessão e decisões estão em [ARCHITECTURE.md](../ARCHITECTURE.md). A execução local atual concluiu os 86 testes sem falhas, incluindo as comparações visuais. A conferência no endereço final está registrada abaixo.
 
 ## Referência visual e adaptações de interação
 
@@ -65,10 +65,10 @@ A execução dedicada de referências visuais concluiu **4/4 cenários em 14,6 s
 
 Os checkpoints históricos foram: 54/54 testes em 5 de novembro; 82 aprovados/quatro skips antes do novo layout em 6 de novembro; e 86 aprovados/quatro skips, em 4,8 minutos, na primeira execução completa da revisão do Figma. O último ainda antecedeu os ajustes de carregamento e da promoção mobile. Esses resultados históricos não substituem a execução final atual.
 
-Os relatórios versionados devem corresponder ao código entregue. A migração dos assets preserva snapshots e os baselines detectam regressões, sem representar certificação de igualdade pixel a pixel com o design. Publicação pública e conferência do endereço final continuam pendentes.
+Os relatórios versionados devem corresponder ao código entregue. A migração dos assets preserva snapshots e os baselines detectam regressões, sem representar certificação de igualdade pixel a pixel com o design. A conferência pública está registrada abaixo, separada da execução local.
 
 ## Publicação pública
 
-A Vercel está conectada, mas não há projeto/deploy final confirmado nesta revisão. O projeto contém vercel.json com fallback SPA/configuração do worker e public/_redirects para Netlify. O build é npm run build, saída dist, com mocks habilitados.
+A versão de produção está em [jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app), publicada a partir de `4e647fe` e acessível sem login da Vercel. A conferência online cobriu desktop/mobile, acesso direto e refresh, conta, compra, eventos e reconexão. A primeira rodada teve 84 aprovados, duas falhas de sincronização e quatro skips; os testes de retomada consultavam a API antes da inicialização do MSW após refresh. O teste passou a aguardar o recibo visível, e ambos passaram na repetição direcionada (18,3 s). A aplicação não precisou de alteração. Evidência: [validação pública](../reports/production-validation.txt).
 
-Após publicar na Vercel, conferir em acesso anônimo o início, rotas internas diretas/refresh, recuperação da sessão, cenários MSW, eventos Socket.IO e compra completa. Só então registrar a URL pública como entrega.
+O projeto contém `vercel.json` com fallback SPA/configuração do worker e `public/_redirects` para Netlify. O build é `npm run build`, saída `dist`, com mocks habilitados. As medições Lighthouse registradas continuam sendo as locais; não foi realizada nova auditoria Lighthouse pública.

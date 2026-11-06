@@ -1,5 +1,7 @@
 # KURIO · NFT Marketplace
 
+**Aplicação publicada:** [jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app)
+
 Implementação do [desafio de frontend da Jungle Gaming](https://github.com/junglegaming/frontend-challenge), com React, TypeScript e uma API simulada na camada de rede. A referência é o [Figma fornecido](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1); a [cópia disponibilizada para a revisão](https://www.figma.com/design/8OMEkRvebRuOLP9QeIJLf1/Frontend-Challenge--Copy-) permitiu obter os assets e os estilos originais em 6 de novembro de 2026.
 
 Todos os dados, endereços, pagamentos e referências de transação são fictícios. A aplicação funciona sem backend externo, extensão de carteira ou conexão com blockchain.
@@ -122,4 +124,4 @@ Algumas interações exigem adaptações: busca visível no catálogo, quatro ca
 
 `npm run build` produz `dist/`. O host deve servir `index.html` para rotas não correspondentes a arquivos, preservando `/mockServiceWorker.js` e os assets; isso permite abrir ou atualizar `/nft/1`, `/cart`, `/checkout` e páginas da conta diretamente. Os mocks também devem permanecer habilitados no build publicado.
 
-O código está em [matheuscolossi/jungle-nft-marketplace-matheus](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus). A Vercel está conectada, mas a publicação pública para os avaliadores permanece pendente. O projeto inclui `vercel.json` com fallback das rotas e configuração do worker; use `npm run build` e a pasta `dist`. Após publicar, confira acesso anônimo, refresh das rotas internas e o fluxo de compra no endereço final. Não há URL pública de entrega confirmada nesta revisão.
+O código está em [matheuscolossi/jungle-nft-marketplace-matheus](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus). A versão de produção está em [jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app), publicada a partir de `4e647fe` e acessível sem login da Vercel. A conferência online cobriu desktop/mobile, acesso direto e refresh, conta, compra, eventos e reconexão. A primeira rodada teve 84 aprovados, duas falhas de sincronização e quatro skips; os testes de retomada consultavam a API antes da inicialização do MSW após refresh. O teste passou a aguardar o recibo visível, e ambos passaram na repetição direcionada (18,3 s). A aplicação não precisou de alteração. Evidência: [validação pública](reports/production-validation.txt). O projeto inclui `vercel.json` com fallback das rotas e configuração do worker.

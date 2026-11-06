@@ -160,6 +160,11 @@ test("response loss recovers the same idempotent order without a second purchase
   const id = orders.data[0].id;
   await page.reload();
   await expect(page).toHaveURL(new RegExp(`/order/${id}$`));
+  await expect(
+    page.getByRole("heading", {
+      name: "A arte agora faz parte da sua história.",
+    }),
+  ).toBeVisible();
   expect((await mockRequest<Order[]>(page, "/orders")).data).toHaveLength(1);
 });
 

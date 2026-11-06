@@ -1,0 +1,197 @@
+Public production validation — 2026-11-06
+URL: https://jungle-nft-marketplace-matheus.vercel.app
+Source: 4e647fef4cc76ddc875a589c30e6e1621fbea5ca
+
+Initial complete run: 84 passed, 2 failed, 4 intentional skips (4.9m).
+Both failures: response loss recovery checked orders immediately after reload, before MSW was ready. The test now waits for the confirmed receipt before fetching orders. No application code changed.
+Targeted desktop/mobile rerun: 2 passed (18.3s).
+All eight visual comparisons passed without baseline updates.
+
+INITIAL RUN
+
+Running 90 tests using 2 workers
+
+(node:30564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [desktop] › tests\account.spec.ts:9:1 › registration validates fields, reports conflicts and restores the session (4.6s)
+  ok  2 [desktop] › tests\audit.spec.ts:19:1 › cart can recover from stock falling from eight to two and remove an exhausted item (6.4s)
+  ok  3 [desktop] › tests\account.spec.ts:38:1 › login rejects invalid credentials and returns to the protected route after expiration (4.7s)
+  ok  4 [desktop] › tests\audit.spec.ts:60:1 › available filter and card include the rare edition when the standard edition is exhausted (4.0s)
+  ok  5 [desktop] › tests\account.spec.ts:62:1 › profile, avatar and password changes persist and handle server validation (9.7s)
+  ok  6 [desktop] › tests\audit.spec.ts:87:1 › coupon error and checkout REST field errors describe their inputs (10.3s)
+  ok  8 [desktop] › tests\audit.spec.ts:134:1 › checkout keeps focus while correcting the first of multiple invalid fields (4.3s)
+  ok  7 [desktop] › tests\account.spec.ts:148:1 › wallet dialog traps focus, validates, adds and edits primary and secondary wallets (6.2s)
+  ok  9 [desktop] › tests\audit.spec.ts:155:1 › catalog minimum and maximum prices remain inclusive after refresh (2.6s)
+  ok 11 [desktop] › tests\audit.spec.ts:206:1 › catalog prices are actually ordered in both directions (2.2s)
+  ok 10 [desktop] › tests\account.spec.ts:247:1 › logout and account changes isolate private favorites and profile data (6.3s)
+  ok 12 [desktop] › tests\audit.spec.ts:226:1 › popular catalog order follows likes and survives refresh (2.5s)
+  ok 14 [desktop] › tests\audit.spec.ts:252:1 › artwork migration preserves account state, prices and legacy purchase snapshots (5.4s)
+  ok 13 [desktop] › tests\account.spec.ts:263:1 › profile preserves an edited draft across background refresh and locks fields until saving finishes (6.8s)
+  ok 16 [desktop] › tests\market.spec.ts:17:1 › catalog composes filters, sort, pagination and restores history/refresh (3.4s)
+  ok 17 [desktop] › tests\market.spec.ts:66:1 › out-of-order responses do not replace the latest search (1.8s)
+  ok 18 [desktop] › tests\market.spec.ts:79:1 › direct detail, gallery, unavailable editions and missing NFT (4.1s)
+  ok 15 [desktop] › tests\audit.spec.ts:383:1 › slow catalog and cart quote show loaders, then offline catalog recovers on retry (10.9s)
+  ok 19 [desktop] › tests\market.spec.ts:120:1 › favorite mutation is optimistic, rolls back on failure and persists on retry (3.9s)
+  ok 20 [desktop] › tests\audit.spec.ts:409:1 › wallet invalid address and API conflict keep the dialog and entered data (3.7s)
+  ok 22 [desktop] › tests\audit.spec.ts:440:1 › registration and password changes reject short and mismatched passwords accessibly (3.4s)
+  ok 21 [desktop] › tests\market.spec.ts:144:1 › loading skeletons, network failure, empty state and retry remain usable (5.8s)
+  ok 24 [desktop] › tests\market.spec.ts:172:1 › keyboard navigation exposes a skip link and visible focus (1.5s)
+  ok 25 [desktop] › tests\market.spec.ts:183:1 › home and detail have stable visual baselines (5.4s)
+  ok 23 [desktop] › tests\audit.spec.ts:469:1 › confirmation subtracts only the purchased snapshot and preserves later additions (12.0s)
+  ok 26 [desktop] › tests\market.spec.ts:202:1 › tablet width has no unintended horizontal overflow (3.7s)
+  ok 28 [desktop] › tests\market.spec.ts:241:1 › visitor cart survives refresh and is preserved on login (5.2s)
+  ok 27 [desktop] › tests\audit.spec.ts:540:1 › keyboard alone completes login, quantity, coupon, checkout, review and receipt (11.3s)
+  ok 29 [desktop] › tests\purchase.spec.ts:17:1 › cart quantities, stock limits, coupon errors, exact totals and removal (8.9s)
+  ok 31 [desktop] › tests\purchase.spec.ts:60:1 › wallet connection can be refused, connected and disconnected before review (4.4s)
+  ok 30 [desktop] › tests\audit.spec.ts:697:1 › all loaded routes and account forms fit the tablet viewport (16.5s)
+  ok 32 [desktop] › tests\purchase.spec.ts:86:1 › complete purchase produces one immutable confirmed receipt after repeated clicks (9.2s)
+  ok 34 [desktop] › tests\purchase.spec.ts:128:1 › payment refusal preserves items and never renders a confirmed receipt (7.5s)
+  ok 33 [desktop] › tests\audit.spec.ts:710:3 › all loaded routes reflow at 200 percent CSS zoom in a 390px viewport (16.7s)
+  x  35 [desktop] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase (16.1s)
+(node:25808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 37 [desktop] › tests\purchase.spec.ts:166:1 › session expiration during checkout preserves the cart and collector draft for resumption (6.3s)
+  ok 36 [desktop] › tests\audit.spec.ts:710:3 › all loaded routes reflow at 200 percent CSS zoom in a 768px viewport (16.8s)
+  ok 38 [desktop] › tests\purchase.spec.ts:185:1 › order API enforces idempotency payload matching and user permissions (6.6s)
+  ok 40 [desktop] › tests\purchase.spec.ts:230:1 › cart and checkout have stable visual baselines (5.8s)
+  ok 39 [desktop] › tests\audit.spec.ts:710:3 › all loaded routes reflow at 200 percent CSS zoom in a 1440px viewport (17.1s)
+(node:31188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 41 [desktop] › tests\realtime.spec.ts:9:1 › Socket.IO price change updates checkout and requires a new review (9.1s)
+  ok 42 [mobile] › tests\account.spec.ts:9:1 › registration validates fields, reports conflicts and restores the session (4.4s)
+  ok 43 [desktop] › tests\realtime.spec.ts:45:1 › Socket.IO stock exhaustion prevents a stale purchase and preserves the cart (5.8s)
+  ok 44 [mobile] › tests\account.spec.ts:38:1 › login rejects invalid credentials and returns to the protected route after expiration (4.6s)
+  ok 45 [desktop] › tests\realtime.spec.ts:69:1 › duplicate and older Socket.IO events do not invalidate or regress data (4.9s)
+  ok 46 [mobile] › tests\account.spec.ts:62:1 › profile, avatar and password changes persist and handle server validation (9.2s)
+  ok 47 [desktop] › tests\realtime.spec.ts:92:1 › pending order survives disconnect, refresh and reconnect without duplication (8.8s)
+  ok 48 [mobile] › tests\account.spec.ts:148:1 › wallet dialog traps focus, validates, adds and edits primary and secondary wallets (6.2s)
+  ok 49 [desktop] › tests\realtime.spec.ts:127:1 › demo reset restores the catalog, private state and event subscriptions (6.3s)
+(node:32488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 50 [mobile] › tests\account.spec.ts:247:1 › logout and account changes isolate private favorites and profile data (5.7s)
+  ok 51 [mobile] › tests\audit.spec.ts:19:1 › cart can recover from stock falling from eight to two and remove an exhausted item (6.7s)
+  ok 52 [mobile] › tests\account.spec.ts:263:1 › profile preserves an edited draft across background refresh and locks fields until saving finishes (6.8s)
+  ok 53 [mobile] › tests\audit.spec.ts:60:1 › available filter and card include the rare edition when the standard edition is exhausted (3.8s)
+  ok 54 [mobile] › tests\market.spec.ts:17:1 › catalog composes filters, sort, pagination and restores history/refresh (3.5s)
+  ok 56 [mobile] › tests\market.spec.ts:66:1 › out-of-order responses do not replace the latest search (1.6s)
+  ok 57 [mobile] › tests\market.spec.ts:79:1 › direct detail, gallery, unavailable editions and missing NFT (3.1s)
+  ok 55 [mobile] › tests\audit.spec.ts:87:1 › coupon error and checkout REST field errors describe their inputs (10.2s)
+  ok 58 [mobile] › tests\market.spec.ts:120:1 › favorite mutation is optimistic, rolls back on failure and persists on retry (3.9s)
+  ok 59 [mobile] › tests\audit.spec.ts:134:1 › checkout keeps focus while correcting the first of multiple invalid fields (4.3s)
+  ok 60 [mobile] › tests\market.spec.ts:144:1 › loading skeletons, network failure, empty state and retry remain usable (6.0s)
+  ok 61 [mobile] › tests\audit.spec.ts:155:1 › catalog minimum and maximum prices remain inclusive after refresh (2.6s)
+  ok 62 [mobile] › tests\market.spec.ts:172:1 › keyboard navigation exposes a skip link and visible focus (1.6s)
+  ok 63 [mobile] › tests\audit.spec.ts:206:1 › catalog prices are actually ordered in both directions (2.3s)
+  ok 65 [mobile] › tests\audit.spec.ts:226:1 › popular catalog order follows likes and survives refresh (2.6s)
+  ok 64 [mobile] › tests\market.spec.ts:183:1 › home and detail have stable visual baselines (4.3s)
+  ok 67 [mobile] › tests\market.spec.ts:202:1 › tablet width has no unintended horizontal overflow (3.8s)
+  ok 66 [mobile] › tests\audit.spec.ts:252:1 › artwork migration preserves account state, prices and legacy purchase snapshots (5.6s)
+  ok 68 [mobile] › tests\market.spec.ts:241:1 › visitor cart survives refresh and is preserved on login (4.6s)
+  ok 69 [mobile] › tests\audit.spec.ts:383:1 › slow catalog and cart quote show loaders, then offline catalog recovers on retry (11.0s)
+  ok 70 [mobile] › tests\purchase.spec.ts:17:1 › cart quantities, stock limits, coupon errors, exact totals and removal (8.5s)
+  ok 71 [mobile] › tests\audit.spec.ts:409:1 › wallet invalid address and API conflict keep the dialog and entered data (3.8s)
+  ok 72 [mobile] › tests\purchase.spec.ts:60:1 › wallet connection can be refused, connected and disconnected before review (4.5s)
+  ok 73 [mobile] › tests\audit.spec.ts:440:1 › registration and password changes reject short and mismatched passwords accessibly (3.4s)
+  ok 74 [mobile] › tests\purchase.spec.ts:86:1 › complete purchase produces one immutable confirmed receipt after repeated clicks (9.4s)
+  ok 75 [mobile] › tests\audit.spec.ts:469:1 › confirmation subtracts only the purchased snapshot and preserves later additions (11.7s)
+  ok 76 [mobile] › tests\purchase.spec.ts:128:1 › payment refusal preserves items and never renders a confirmed receipt (7.5s)
+  ok 77 [mobile] › tests\audit.spec.ts:540:1 › keyboard alone completes login, quantity, coupon, checkout, review and receipt (10.6s)
+  -  79 [mobile] › tests\audit.spec.ts:697:1 › all loaded routes and account forms fit the tablet viewport
+  -  80 [mobile] › tests\audit.spec.ts:710:3 › all loaded routes reflow at 200 percent CSS zoom in a 390px viewport
+  -  81 [mobile] › tests\audit.spec.ts:710:3 › all loaded routes reflow at 200 percent CSS zoom in a 768px viewport
+  -  82 [mobile] › tests\audit.spec.ts:710:3 › all loaded routes reflow at 200 percent CSS zoom in a 1440px viewport
+  x  78 [mobile] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase (16.1s)
+(node:3876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 83 [mobile] › tests\realtime.spec.ts:9:1 › Socket.IO price change updates checkout and requires a new review (9.2s)
+  ok 84 [mobile] › tests\purchase.spec.ts:166:1 › session expiration during checkout preserves the cart and collector draft for resumption (6.5s)
+  ok 85 [mobile] › tests\realtime.spec.ts:45:1 › Socket.IO stock exhaustion prevents a stale purchase and preserves the cart (5.7s)
+  ok 86 [mobile] › tests\purchase.spec.ts:185:1 › order API enforces idempotency payload matching and user permissions (6.5s)
+  ok 87 [mobile] › tests\realtime.spec.ts:69:1 › duplicate and older Socket.IO events do not invalidate or regress data (4.9s)
+  ok 88 [mobile] › tests\purchase.spec.ts:230:1 › cart and checkout have stable visual baselines (5.5s)
+  ok 89 [mobile] › tests\realtime.spec.ts:92:1 › pending order survives disconnect, refresh and reconnect without duplication (8.7s)
+  ok 90 [mobile] › tests\realtime.spec.ts:127:1 › demo reset restores the catalog, private state and event subscriptions (6.2s)
+
+
+  1) [desktop] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase 
+
+    TypeError: expect(received).toHaveLength(expected)
+
+    Matcher error: received value must have a length property whose value must be a number
+
+    Received has value: null
+
+      161 |   await page.reload();
+      162 |   await expect(page).toHaveURL(new RegExp(`/order/${id}$`));
+    > 163 |   expect((await mockRequest<Order[]>(page, "/orders")).data).toHaveLength(1);
+          |                                                              ^
+      164 | });
+      165 |
+      166 | test("session expiration during checkout preserves the cart and collector draft for resumption", async ({
+        at C:\Users\mlc17\Documents\ChatGPT\jungle-nft-marketplace\tests\purchase.spec.ts:163:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-desktop\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-desktop\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-desktop\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-desktop\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [mobile] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase 
+
+    TypeError: expect(received).toHaveLength(expected)
+
+    Matcher error: received value must have a length property whose value must be a number
+
+    Received has value: null
+
+      161 |   await page.reload();
+      162 |   await expect(page).toHaveURL(new RegExp(`/order/${id}$`));
+    > 163 |   expect((await mockRequest<Order[]>(page, "/orders")).data).toHaveLength(1);
+          |                                                              ^
+      164 | });
+      165 |
+      166 | test("session expiration during checkout preserves the cart and collector draft for resumption", async ({
+        at C:\Users\mlc17\Documents\ChatGPT\jungle-nft-marketplace\tests\purchase.spec.ts:163:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-mobile\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-mobile\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-mobile\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\visual-checks\production-e2e\purchase-response-loss-rec-d9240-r-without-a-second-purchase-mobile\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase 
+    [mobile] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase 
+  4 skipped
+  84 passed (4.9m)
+
+TARGETED RERUN
+
+Running 2 tests using 2 workers
+
+(node:31260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [mobile] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase (17.3s)
+  ok 1 [desktop] › tests\purchase.spec.ts:145:1 › response loss recovers the same idempotent order without a second purchase (17.4s)
+
+  2 passed (18.3s)
