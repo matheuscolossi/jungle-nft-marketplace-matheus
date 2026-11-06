@@ -138,20 +138,23 @@ export async function readyForScreenshot(page: Page) {
       !(await artwork.evaluate(
         (element) => (element as HTMLImageElement).complete,
       ))
-    )
+    ) {
       await artwork.scrollIntoViewIfNeeded();
+      await artwork.evaluate((element) =>
+        (element as HTMLImageElement).decode(),
+      );
+    }
   }
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.evaluate(async () => {
     await Promise.all(
       Array.from(document.images)
-        .filter((image) => !image.complete)
-        .map(
+        .filter(
           (image) =>
-            new Promise((resolve) => {
-              image.onload = image.onerror = resolve;
-            }),
-        ),
+            image.getClientRects().length > 0 &&
+            getComputedStyle(image).visibility !== "hidden",
+        )
+        .map((image) => image.decode()),
     );
   });
 }

@@ -3,13 +3,14 @@ import {
   addFirstNft,
   boot,
   checkout,
+  collector,
   demo,
   expectFieldError,
   login,
   mockRequest,
   readyForScreenshot,
 } from "./helpers";
-import type { Cart, Order, Wallet } from "../src/types";
+import type { Cart, Nft, Order, PageResult, Quote, Wallet } from "../src/types";
 
 test.beforeEach(async ({ page }) => {
   await boot(page);
@@ -220,6 +221,163 @@ test("catalog prices are actually ordered in both directions", async ({
       [...prices].sort((a, b) => (direction === "price-asc" ? a - b : b - a)),
     );
   }
+});
+
+test("popular catalog order follows likes and survives refresh", async ({
+  page,
+}) => {
+  const response = await mockRequest<PageResult<Nft>>(
+    page,
+    "/nfts?sort=popular&pageSize=24",
+  );
+  expect(response.status).toBe(200);
+  const ranked = response.data.items;
+  expect(ranked).toHaveLength(24);
+  expect(ranked.map(({ likes }) => likes)).toEqual(
+    ranked.map(({ likes }) => likes).sort((a, b) => b - a),
+  );
+  expect(ranked[0].id).toBe("24");
+
+  await page.getByLabel(/^Ordenar por(?:\s*\*)?$/).selectOption("popular");
+  await expect(page).toHaveURL(/sort=popular/);
+  const names = page.getByTestId("nft-card").locator("h3");
+  await expect(names).toHaveText(ranked.slice(0, 9).map(({ name }) => name));
+  await page.reload();
+  await expect(page.getByLabel(/^Ordenar por(?:\s*\*)?$/)).toHaveValue(
+    "popular",
+  );
+  await expect(names).toHaveText(ranked.slice(0, 9).map(({ name }) => name));
+});
+
+test("artwork migration preserves account state, prices and legacy purchase snapshots", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date("2026-11-06T12:00:00Z"));
+  await login(page, "/nft/1");
+  expect(
+    (
+      await mockRequest(page, "/cart/items", "POST", {
+        nftId: "1",
+        editionId: "standard",
+        quantity: 1,
+      })
+    ).status,
+  ).toBe(200);
+  const quote = (await mockRequest<Quote>(page, "/quote", "POST", {})).data;
+  const wallet = (await mockRequest<Wallet[]>(page, "/wallets")).data[0];
+  const key = "artwork-migration-purchase";
+  const placed = await mockRequest<Order>(
+    page,
+    "/orders",
+    "POST",
+    {
+      quoteId: quote.id,
+      walletId: wallet.id,
+      network: wallet.network,
+      collector,
+    },
+    { "Idempotency-Key": key },
+  );
+  expect(placed.status).toBe(201);
+  await demo(page, { action: "settle-orders" });
+  expect(
+    (await mockRequest<Order>(page, `/orders/${placed.data.id}`)).data.status,
+  ).toBe("confirmed");
+  await mockRequest(page, "/cart/items", "POST", {
+    nftId: "2",
+    editionId: "standard",
+    quantity: 2,
+  });
+  await mockRequest(page, "/quote", "POST", { coupon: "JUNGLE10" });
+  await mockRequest(page, "/favorites/2", "POST");
+  await demo(page, {
+    action: "update-nft",
+    nftId: "1",
+    price: "0.91",
+    stock: 4,
+  });
+
+  const expected = await page.evaluate(() => {
+    const legacy = JSON.parse(localStorage.getItem("jungle-demo-v1")!);
+    const oldImage = (image: string) =>
+      image
+        .replace("/assets/figma/hero-ape.webp", "/assets/emerald-ape.webp")
+        .replace("/assets/figma/neon-vessel.webp", "/assets/ivory-baron.webp")
+        .replace("/assets/figma/", "/assets/");
+    legacy.schemaVersion = 2;
+    legacy.nfts.forEach((nft: Nft) => {
+      nft.image = oldImage(nft.image);
+      nft.images = nft.images.map(oldImage);
+    });
+    legacy.orders.forEach((order: Order) => {
+      order.quote.items.forEach((item) => {
+        item.image = oldImage(item.image);
+      });
+    });
+    (Object.values(legacy.quotes) as { quote: Quote }[]).forEach(
+      ({ quote }) => {
+        quote.items.forEach((item) => {
+          item.image = oldImage(item.image);
+        });
+      },
+    );
+    localStorage.setItem("jungle-demo-v1", JSON.stringify(legacy));
+    const preserved: Record<string, unknown> = { ...legacy };
+    delete preserved.schemaVersion;
+    delete preserved.nfts;
+    return {
+      preserved,
+      nfts: legacy.nfts.map(({ id, price, stock, version, editions }: Nft) => ({
+        id,
+        price,
+        stock,
+        version,
+        editions,
+      })),
+      order: legacy.orders[0] as Order,
+    };
+  });
+  await page.reload();
+  await expect(
+    page
+      .getByRole("heading", { name: "Emerald Ape #042", exact: true })
+      .first(),
+  ).toBeVisible();
+  const migrated = await page.evaluate(() => {
+    const value = JSON.parse(localStorage.getItem("jungle-demo-v1")!);
+    const preserved: Record<string, unknown> = { ...value };
+    delete preserved.schemaVersion;
+    delete preserved.nfts;
+    return {
+      schemaVersion: value.schemaVersion,
+      nfts: value.nfts as Nft[],
+      preserved,
+    };
+  });
+  expect(migrated.schemaVersion).toBe(3);
+  expect(migrated.preserved).toEqual(expected.preserved);
+  expect(
+    migrated.nfts.map(({ id, price, stock, version, editions }) => ({
+      id,
+      price,
+      stock,
+      version,
+      editions,
+    })),
+  ).toEqual(expected.nfts);
+  expect(migrated.nfts[0].image).toBe("/assets/figma/hero-ape.webp");
+  expect(
+    migrated.nfts.every((nft) =>
+      nft.images.every((image) => image.startsWith("/assets/figma/")),
+    ),
+  ).toBe(true);
+  const cart = (await mockRequest<Cart>(page, "/cart")).data;
+  expect(cart.items[0]).toMatchObject({ nftId: "2", quantity: 2 });
+  expect(cart.items[0].nft.image).toBe("/assets/figma/sage-nomad.webp");
+  const recovered = await mockRequest<Order>(page, `/orders?key=${key}`);
+  expect(recovered.status).toBe(200);
+  expect(recovered.data).toEqual(expected.order);
+  expect(recovered.data.quote.items[0].image).toBe("/assets/emerald-ape.webp");
 });
 
 test("slow catalog and cart quote show loaders, then offline catalog recovers on retry", async ({
