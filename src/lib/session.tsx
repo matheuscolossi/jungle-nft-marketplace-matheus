@@ -35,7 +35,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const changed = currentUser.current?.id !== next?.id;
     currentUser.current = next;
     setSession({ user: next, loading: false });
-    // Cache notifications must run outside a React state updater.
+    // A limpeza do cache fica fora da atualização de estado do React.
     if (changed) {
       const privateResources = new Set([
         "profile",

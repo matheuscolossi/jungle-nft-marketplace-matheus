@@ -1,5 +1,5 @@
 const SCALE = 10n ** 18n;
-/** Decimal ETH strings are converted to wei; floating point is never used. */
+/** Usa wei para preservar a precisão dos valores em ETH. */
 export function toWei(value: string): bigint {
   if (!/^\d+(?:\.\d{1,18})?$/.test(value))
     throw new Error("Invalid ETH decimal");

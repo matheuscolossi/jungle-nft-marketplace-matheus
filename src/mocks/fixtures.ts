@@ -1,4 +1,5 @@
 import type { Nft, User, Wallet } from "../types";
+import { availableStock } from "../lib/availability";
 
 const titles = [
   "Emerald Ape #042",
@@ -46,6 +47,20 @@ export const nftFixtures: Nft[] = titles.map((name, i) => {
     "golden-beat",
   ];
   const image = `/assets/${artwork[i % 8]}.webp`;
+  const editions = [
+    {
+      id: "standard",
+      name: "Standard edition",
+      stock: i === 23 ? 0 : 8 + (i % 5),
+      price,
+    },
+    {
+      id: "rare",
+      name: "Rare edition",
+      stock: i % 5 === 0 ? 0 : 3,
+      price: ["1.45", "1.82", "2.25", "1.18", "3.4", "1.65"][i % 6],
+    },
+  ];
   return {
     id: String(i + 1),
     name,
@@ -57,21 +72,8 @@ export const nftFixtures: Nft[] = titles.map((name, i) => {
     image,
     images: [image, `/assets/${artwork[(i + 2) % 8]}.webp`],
     price,
-    stock: i === 23 ? 0 : 8 + (i % 5),
-    editions: [
-      {
-        id: "standard",
-        name: "Standard edition",
-        stock: i === 23 ? 0 : 8 + (i % 5),
-        price,
-      },
-      {
-        id: "rare",
-        name: "Rare edition",
-        stock: i % 5 === 0 ? 0 : 3,
-        price: ["1.45", "1.82", "2.25", "1.18", "3.4", "1.65"][i % 6],
-      },
-    ],
+    stock: availableStock({ editions }),
+    editions,
     version: 1,
     featured: i < 4,
     likes: 24 + i * 13,
@@ -81,6 +83,9 @@ export const userFixtures: User[] = [
   {
     id: "user-1",
     name: "Alex Morgan",
+    username: "alexmorgan",
+    ensName: "alexmorgan.eth",
+    walletNickname: "Main wallet",
     email: "alex@example.com",
     avatar: "/assets/avatar.svg",
     bio: "Digital art collector and explorer.",
@@ -88,16 +93,26 @@ export const userFixtures: User[] = [
   {
     id: "user-2",
     name: "Sofia Chen",
+    username: "sofiachen",
+    ensName: "sofiachen.eth",
+    walletNickname: "Main wallet",
     email: "sofia@example.com",
     avatar: "/assets/avatar.svg",
     bio: "Collecting stories, one artwork at a time.",
   },
 ];
 export function walletFixtures(userId: string): Wallet[] {
+  const user = userFixtures.find((item) => item.id === userId)!;
   return [
     {
       id: `${userId}-wallet-1`,
       name: "Main wallet",
+      nickname: user.walletNickname,
+      profileName: user.name,
+      type: userId === "user-1" ? "MetaMask" : "Coinbase Wallet",
+      referralCode: "JUNGLE10",
+      email: user.email,
+      ensName: user.ensName,
       address: `0x${userId === "user-1" ? "a" : "b"}123456789012345678901234567890123456789`,
       network: "Ethereum",
       primary: true,

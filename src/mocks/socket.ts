@@ -7,11 +7,10 @@ import {
   subscribeMockEvents,
 } from "./database";
 
-// MSW normalizes Socket.IO's transport path to the namespace root before matching.
-// Accept both representations for compatibility with the published binding.
+// O MSW normaliza o caminho do Socket.IO; aceitamos os dois formatos.
 const stream = ws.link(/^wss?:\/\/[^/]+\/(?:socket\.io\/?)?$/);
 
-/** Real Engine.IO handshake + Socket.IO encoded packets, intercepted by MSW. */
+/** Handshake e mensagens do Socket.IO interceptados pelo MSW. */
 export const socketHandlers = [
   stream.addEventListener("connection", (connection) => {
     const { client } = connection;
@@ -37,7 +36,7 @@ export const socketHandlers = [
       if (action === "disconnect")
         client.close(1012, "Simulated connection interruption");
     });
-    // The published binding establishes the namespace; Engine.IO heartbeat stays on the raw transport.
+    // O binding cuida do namespace; o ping continua no transporte Engine.IO.
     const heartbeat = setInterval(() => {
       client.send("2");
     }, 20_000);

@@ -30,6 +30,8 @@
 }
 body {
   margin: 0;
+  container: viewport / inline-size;
+  overflow-wrap: anywhere;
 }
 button,
 input,
@@ -144,6 +146,8 @@ input:invalid:not(:placeholder-shown):focus {
 }
 .site-header {
   height: 88px;
+  min-height: 88px;
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -222,7 +226,8 @@ input:invalid:not(:placeholder-shown):focus {
     color 0.18s;
   font-size: 12px;
   font-weight: 700;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 100%;
 }
 .btn-primary {
   background: var(--primary);
@@ -1161,6 +1166,24 @@ input:invalid:not(:placeholder-shown):focus {
   margin: 0;
   overflow-wrap: anywhere;
 }
+.review-details {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(0, 2fr);
+  gap: 10px 16px;
+  margin: 24px 0;
+  font-size: 11px;
+}
+.review-details dt {
+  color: var(--muted);
+}
+.review-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.field select[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: #f09c88;
+}
 .receipt-actions {
   display: flex;
   justify-content: center;
@@ -1452,7 +1475,7 @@ input:invalid:not(:placeholder-shown):focus {
     transform: translateX(100%);
   }
 }
-@media (min-width: 1500px) {
+@container viewport (min-width: 1500px) {
   .site {
     max-width: 1370px;
   }
@@ -1471,7 +1494,7 @@ input:invalid:not(:placeholder-shown):focus {
     gap: 35px 24px;
   }
 }
-@media (max-width: 1050px) {
+@container viewport (max-width: 1050px) {
   .site {
     padding: 0 28px;
   }
@@ -1590,12 +1613,13 @@ input:invalid:not(:placeholder-shown):focus {
     right: -10px;
   }
 }
-@media (max-width: 800px) {
+@container viewport (max-width: 800px) {
   .site {
     padding: 0 22px;
   }
   .site-header {
     height: 75px;
+    min-height: 75px;
   }
   .brand {
     font-size: 20px;
@@ -1742,15 +1766,13 @@ input:invalid:not(:placeholder-shown):focus {
     font-size: 25px;
   }
 }
-@media (max-width: 600px) {
-  :root {
-    font-size: 13px;
-  }
+@container viewport (max-width: 600px) {
   .site {
     padding: 0 18px;
   }
   .site-header {
-    height: 70px;
+    min-height: 70px;
+    height: auto;
     gap: 10px;
   }
   .brand {
@@ -2267,6 +2289,11 @@ input:invalid:not(:placeholder-shown):focus {
     font-size: 9px !important;
   }
 }
+@media (max-width: 600px) {
+  :root {
+    font-size: 13px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *:before,
@@ -2277,7 +2304,7 @@ input:invalid:not(:placeholder-shown):focus {
   }
 }
 
-/* Account screens: keep navigation, forms and wallet addresses usable at narrow widths. */
+/* Mantém os formulários e endereços das carteiras legíveis em telas menores. */
 .account-sidebar > p {
   margin: 0;
 }
@@ -2386,7 +2413,7 @@ input:invalid:not(:placeholder-shown):focus {
 .account-layout .success:empty {
   display: none;
 }
-@media (max-width: 600px) {
+@container viewport (max-width: 600px) {
   .account-sidebar {
     display: block;
   }
@@ -2475,7 +2502,7 @@ input:invalid:not(:placeholder-shown):focus {
   width: 65px;
   height: 65px;
 }
-@media (max-width: 1100px) {
+@container viewport (max-width: 1100px) {
   .connection-status {
     display: none;
   }
@@ -2501,7 +2528,7 @@ input:invalid:not(:placeholder-shown):focus {
     display: none;
   }
 }
-@media (max-width: 800px) and (min-width: 601px) {
+@container viewport (max-width: 800px) and (min-width: 601px) {
   .cart-item {
     grid-template-columns: 50px minmax(0, 1fr) 26px;
   }
@@ -2519,7 +2546,7 @@ input:invalid:not(:placeholder-shown):focus {
     grid-row: 1 / span 4;
   }
 }
-@media (max-width: 600px) {
+@container viewport (max-width: 600px) {
   .cart-item {
     grid-template-columns: 58px minmax(0, 1fr) 76px 23px;
     gap: 9px;
@@ -2576,7 +2603,7 @@ main {
 .connection-status {
   min-width: 76px;
 }
-@media (max-width: 600px) {
+@container viewport (max-width: 600px) {
   .detail-loading {
     min-height: 1850px;
   }

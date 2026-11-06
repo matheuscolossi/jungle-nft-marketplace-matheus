@@ -25,7 +25,8 @@ import {
   Zap,
 } from "lucide-react";
 import { MarketPage, DetailPage, type CatalogSearch } from "./pages/Market";
-import { CartPage, CheckoutPage, OrderPage, useCart } from "./pages/Purchase";
+import { CartPage, OrderPage, useCart } from "./pages/Purchase";
+import { CheckoutPage } from "./pages/Checkout";
 import { AuthPage, ProfilePage, WalletsPage } from "./pages/Account";
 import { Button } from "./components/ui/button";
 import { Empty, ErrorState, NftCard, Skeleton } from "./components/Shared";
@@ -416,8 +417,7 @@ function Private({ children }: { children: React.ReactNode }) {
   const { user, loading, loggingOut } = useSession(),
     location = useLocation(),
     navigate = useNavigate();
-  // The router exposes its next location before the previous match unmounts.
-  // Keep the protected destination stable so login URLs never nest recursively.
+  // Mantém o destino original enquanto o login é carregado, evitando redirecionamentos em sequência.
   const returnTo = useRef(location.href);
   const redirecting = useRef(false);
   useEffect(() => {
@@ -512,6 +512,9 @@ const market = createRoute({
       : "featured",
     page: Math.max(1, Math.floor(Number(raw.page) || 1)),
     available: raw.available === true || String(raw.available) === "true",
+    minPrice: /^\d*(\.\d+)?$/.test(String(raw.minPrice ?? ""))
+      ? String(raw.minPrice ?? "")
+      : "",
     maxPrice: /^\d*(\.\d+)?$/.test(String(raw.maxPrice ?? ""))
       ? String(raw.maxPrice ?? "")
       : "",

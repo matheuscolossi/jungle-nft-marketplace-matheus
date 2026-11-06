@@ -8,11 +8,14 @@ import type {
   RealtimeEvent,
   User,
   Wallet,
+  WalletType,
 } from "../types";
 import { fromWei, multiplyEth, toWei } from "../lib/money";
+import { availableStock } from "../lib/availability";
 import { nftFixtures, userFixtures, walletFixtures } from "./fixtures";
 
 const KEY = "jungle-demo-v1";
+const SCHEMA_VERSION = 2;
 interface StoredCart {
   items: { id: string; nftId: string; editionId: string; quantity: number }[];
   coupon: string;
@@ -26,6 +29,7 @@ interface Account {
   cart: StoredCart;
 }
 interface Database {
+  schemaVersion: number;
   nfts: Nft[];
   accounts: Account[];
   visitor: StoredCart;
@@ -50,6 +54,60 @@ const events = new Set<(event: RealtimeEvent) => void>();
 const controls = new Set<(action: "disconnect" | "reconnect") => void>();
 let lastEvent: RealtimeEvent | undefined;
 const copy = <T>(value: T): T => structuredClone(value);
+
+export const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const usernamePattern = /^[a-z0-9][a-z0-9_-]{2,29}$/i;
+export const ensPattern = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]\.eth$/i;
+export const addressPattern = /^0x[a-fA-F0-9]{40}$/;
+export const referralPattern = /^[a-z0-9_-]{1,32}$/i;
+export const walletTypes: WalletType[] = [
+  "MetaMask",
+  "Coinbase Wallet",
+  "WalletConnect",
+];
+export const trimmedText = (value: unknown) =>
+  typeof value === "string" ? value.trim() : "";
+export function defaultEnsName(username: string, suffix = "") {
+  const slug = username.replace(/[^a-z0-9-]/gi, "-").replace(/-+$/, "");
+  return `${slug.length >= 3 ? slug : `${slug}-collector`}${suffix ? `-${suffix}` : ""}.eth`.toLowerCase();
+}
+export function validSecondaryAddress(value: string) {
+  return !value || addressPattern.test(value) || ensPattern.test(value);
+}
+
+function migratedWallet(wallet: Wallet, user: User): Wallet {
+  return {
+    ...wallet,
+    nickname: wallet.nickname ?? wallet.name ?? user.walletNickname,
+    profileName: wallet.profileName ?? user.name,
+    type: wallet.type ?? "MetaMask",
+    referralCode: wallet.referralCode ?? "JUNGLE10",
+    email: wallet.email ?? user.email,
+    ensName: wallet.ensName ?? user.ensName,
+  };
+}
+
+function migrateDatabase() {
+  if (db.schemaVersion >= SCHEMA_VERSION) return;
+  // A mesma chave preserva sessão, carrinhos e pedidos de quem já abriu a demo.
+  db.accounts.forEach((owner, index) => {
+    const fixture = userFixtures.find((item) => item.id === owner.user.id);
+    owner.user.username ??= fixture?.username ?? `collector-${index + 1}`;
+    owner.user.ensName ??=
+      fixture?.ensName ?? defaultEnsName(owner.user.username);
+    owner.user.walletNickname ??= owner.wallets[0]?.name ?? "Main wallet";
+    owner.wallets = owner.wallets.map((wallet) =>
+      migratedWallet(wallet, owner.user),
+    );
+  });
+  db.nfts.forEach((nft) => {
+    nft.stock = availableStock(nft);
+  });
+  // Recibos e tentativas continuam com o snapshot original, inclusive os legados.
+  db.schemaVersion = SCHEMA_VERSION;
+  saveDatabase();
+}
+
 export function saveDatabase() {
   localStorage.setItem(KEY, JSON.stringify(db));
 }
@@ -67,9 +125,13 @@ export async function initializeDatabase() {
   initialization = (async () => {
     try {
       const saved = localStorage.getItem(KEY);
-      if (saved) db = JSON.parse(saved) as Database;
+      if (saved) {
+        db = JSON.parse(saved) as Database;
+        migrateDatabase();
+      }
     } catch {
       localStorage.removeItem(KEY);
+      await resetDatabase();
     }
     if (!db) await resetDatabase();
   })();
@@ -78,6 +140,7 @@ export async function initializeDatabase() {
 export async function resetDatabase() {
   const passwordHash = await hashPassword("Jungle123!");
   db = {
+    schemaVersion: SCHEMA_VERSION,
     nfts: copy(nftFixtures),
     accounts: userFixtures.map((user) => ({
       user: copy(user),
@@ -236,12 +299,22 @@ export function changeCart(
     (item) => item.nftId === nftId && item.editionId === editionId,
   );
   const next = replace ? quantity : quantity + (existing?.quantity ?? 0);
-  if (!Number.isSafeInteger(next) || next < 1 || next > edition.stock)
+  if (
+    !Number.isSafeInteger(quantity) ||
+    quantity < 1 ||
+    !Number.isSafeInteger(next) ||
+    next > edition.stock
+  )
     throw new MockError(
       409,
       "STOCK_CONFLICT",
       `Only ${edition.stock} editions are available.`,
-      { quantity: `Choose between 1 and ${edition.stock}.` },
+      {
+        quantity:
+          edition.stock > 0
+            ? `Choose between 1 and ${edition.stock}.`
+            : "This edition is sold out. Remove it from your cart to continue.",
+      },
     );
   if (existing) existing.quantity = next;
   else
@@ -292,11 +365,21 @@ export function createQuote(couponValue?: string, persist = true): Quote {
       { coupon: "Try JUNGLE10 for 10% off." },
     );
   for (const item of cart.items)
-    if (item.quantity > item.edition.stock)
+    if (
+      !Number.isSafeInteger(item.quantity) ||
+      item.quantity < 1 ||
+      item.quantity > item.edition.stock
+    )
       throw new MockError(
         409,
         "STOCK_CONFLICT",
         `${item.nft.name} has only ${item.edition.stock} editions available. Adjust your cart.`,
+        {
+          quantity:
+            item.edition.stock > 0
+              ? `Choose between 1 and ${item.edition.stock}.`
+              : "Remove the sold-out edition from your cart.",
+        },
       );
   const items = cart.items.map((item) => ({
     id: item.id,
@@ -358,9 +441,9 @@ export function updateNft(
         "VALIDATION",
         "Stock must be a positive integer.",
       );
-    nft.stock = changes.stock;
     nft.editions[0].stock = changes.stock;
   }
+  nft.stock = availableStock(nft);
   nft.version++;
   saveDatabase();
   emitResource("nft.updated", nft);
@@ -395,7 +478,7 @@ export function settleOrders() {
         const nft = findNft(item.nftId),
           edition = nft.editions.find((entry) => entry.id === item.editionId)!;
         edition.stock -= item.quantity;
-        nft.stock = nft.editions[0].stock;
+        nft.stock = availableStock(nft);
         nft.version++;
         const cartItem = owner.cart.items.find((entry) => entry.id === item.id);
         if (cartItem)
@@ -411,6 +494,51 @@ export function settleOrders() {
     emitResource("order.updated", order, order.userId);
   }
 }
+function validateCollector(input: Collector | undefined): Collector {
+  const collector = {
+    name: trimmedText(input?.name),
+    email: trimmedText(input?.email).toLowerCase(),
+    username: trimmedText(input?.username).toLowerCase(),
+    profileName: trimmedText(input?.profileName),
+    walletType: trimmedText(input?.walletType) as WalletType,
+    referralCode: trimmedText(input?.referralCode),
+    ensName: trimmedText(input?.ensName).toLowerCase(),
+    secondaryAddress: trimmedText(input?.secondaryAddress),
+    note: trimmedText(input?.note),
+  };
+  const fields: Record<string, string> = {};
+  if (collector.name.length < 2 || collector.name.length > 80)
+    fields.name = "Use between 2 and 80 characters.";
+  if (!emailPattern.test(collector.email) || collector.email.length > 254)
+    fields.email = "Enter a valid email address.";
+  if (!usernamePattern.test(collector.username))
+    fields.username = "Use 3 to 30 letters, numbers, underscores or hyphens.";
+  if (collector.profileName.length < 2 || collector.profileName.length > 80)
+    fields.profileName = "Use between 2 and 80 characters.";
+  if (!walletTypes.includes(collector.walletType))
+    fields.walletType = "Select MetaMask, Coinbase Wallet or WalletConnect.";
+  if (!referralPattern.test(collector.referralCode))
+    fields.referralCode =
+      "Use 1 to 32 letters, numbers, underscores or hyphens.";
+  if (!ensPattern.test(collector.ensName))
+    fields.ensName = "Enter an ENS name with 3 to 63 characters before .eth.";
+  if (!validSecondaryAddress(collector.secondaryAddress))
+    fields.secondaryAddress = "Enter a valid ENS name or a 0x wallet address.";
+  if (collector.note.length > 280) fields.note = "Use at most 280 characters.";
+  if (Object.keys(fields).length)
+    throw new MockError(
+      422,
+      "VALIDATION",
+      "Check the collector details.",
+      fields,
+    );
+  return {
+    ...collector,
+    secondaryAddress: collector.secondaryAddress || undefined,
+    note: collector.note || undefined,
+  };
+}
+
 export function placeOrder(
   input: {
     quoteId: string;
@@ -487,14 +615,14 @@ export function placeOrder(
       "Select the network registered for this wallet.",
       { network: "The wallet network must match." },
     );
-  if (
-    !input.collector?.name?.trim() ||
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.collector?.email ?? "")
-  )
-    throw new MockError(422, "VALIDATION", "Check the collector details.", {
-      name: "Name is required.",
-      email: "Enter a valid email.",
-    });
+  const collector = validateCollector(input.collector);
+  if (collector.walletType !== wallet.type)
+    throw new MockError(
+      422,
+      "WALLET_TYPE_MISMATCH",
+      "Select the type registered for this wallet.",
+      { walletType: "O tipo deve corresponder à carteira selecionada." },
+    );
   const id = nextId("order"),
     order: Order = {
       id,
@@ -503,7 +631,7 @@ export function placeOrder(
       quote: copy(saved.quote),
       wallet: copy(wallet),
       network: wallet.network,
-      collector: copy(input.collector),
+      collector: copy(collector),
       transaction: `0x${id.replace(/[^0-9]/g, "").padStart(64, "0")}`,
       createdAt: Date.now(),
       updatedAt: Date.now(),

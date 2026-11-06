@@ -14,6 +14,8 @@ MSW inicia antes da aplicação. O cliente Socket.IO é importado somente após 
 
 A simulação persiste uma base versionada na chave `jungle-demo-v1` do localStorage. Ela inclui catálogo, contas, favoritos, carteiras, carrinhos, cotações, pedidos e referências idempotentes. O reset reconstrói toda a base a partir das fixtures. O controle visual também remove os rascunhos de checkout da sessão e recarrega o início, restaurando caches e deduplicação dos eventos. Cada contexto de navegador começa isolado nos testes.
 
+A versão atual usa `schemaVersion: 2` dentro dessa mesma chave. Na inicialização, a migração de uma base anterior preenche os novos dados de conta/carteira e recalcula o estoque agregado do catálogo, preservando sessão, carrinhos, favoritos, hashes, cotações, pedidos e referências idempotentes. Snapshots de pedidos legados permanecem intactos: não se atribuem dados atuais a uma compra antiga. O recibo apresenta os novos campos apenas quando eles existem no snapshot.
+
 A sessão mantém o identificador da conta e expiração de uma hora. A API recupera a conta na inicialização; recursos privados verificam a sessão em cada operação. Respostas 401 encerram a sessão na interface. Login preserva o destino anterior por uma URL de retorno local; destinos externos e protocolos relativos não são aceitos.
 
 Logout/troca de usuário limpam o cache privado e encerram os listeners da sessão anterior. Catálogo e detalhes públicos permanecem no cache para não interromper consultas ativas durante a recuperação da sessão. Chaves de consultas privadas incluem a identidade do usuário. Pedidos também verificam autoria no handler: possuir um identificador de pedido de outra conta não concede acesso.
@@ -26,6 +28,8 @@ O visitante e cada conta têm carrinhos separados. O login combina os itens pela
 
 Quantidades são inteiros seguros positivos. Estoque e edição são validados no handler a cada inclusão/alteração e novamente ao cotar/finalizar. Remoção é uma operação explícita. O carrinho persiste após atualizar a página.
 
+`Nft.stock` soma o estoque de todas as edições, por meio de `src/lib/availability.ts`. Fixtures, migração, alteração de catálogo e liquidação de pedidos mantêm esse valor. O cartão e o filtro de disponíveis também consideram todas as edições: estoque zero da edição padrão não esgota uma edição rara ainda comprável. A compra continua limitada ao estoque da edição selecionada. Se o estoque cair de oito para duas unidades, o controle de diminuir ajusta diretamente para duas; se cair para zero, os controles de quantidade ficam bloqueados e a remoção continua explícita.
+
 Valores ETH são strings decimais no transporte. `src/lib/money.ts` converte para wei com `bigint` para soma, multiplicação, desconto e taxa; a interface não calcula o valor a pagar com ponto flutuante. O desconto JUNGLE10 corresponde a 10% do subtotal, com arredondamento para baixo em wei, e a taxa simulada é `0.0025 ETH` em carrinho não vazio.
 
 A cotação retornada pela API contém itens e preços, subtotal, desconto, taxa, total, cupom, expiração e uma impressão dos dados relevantes. Ela é a referência para o pagamento; preços mostrados anteriormente no catálogo não autorizam um pedido.
@@ -34,7 +38,7 @@ A cotação retornada pela API contém itens e preços, subtotal, desconto, taxa
 
 As consultas permanecem frescas por 20 segundos e em memória por cinco minutos sem observadores. Há uma nova tentativa automática para falha de conexão ou HTTP 5xx, nenhuma para 4xx. Foco da janela refaz consultas obsoletas. Mutations não têm retry automático.
 
-As chaves do catálogo incluem todos os parâmetros de busca/filtro/ordenação/página. Funções de consulta encaminham o AbortSignal ao Axios; respostas de uma consulta antiga não substituem uma chave mais recente. Alterar filtro reinicia a página. O Router mantém os parâmetros na URL, permitindo refresh e voltar/avançar.
+As chaves do catálogo incluem todos os parâmetros de busca/filtro/ordenação/página. A consulta de catálogo encaminha o AbortSignal ao Axios; respostas de uma consulta antiga não substituem uma chave mais recente. Alterar filtro reinicia a página. O Router mantém os parâmetros na URL, incluindo os limites inclusivos `minPrice` e `maxPrice` em ETH, permitindo refresh e voltar/avançar. Ambos são enviados à API como strings decimais; a API valida o formato e compara valores em wei.
 
 Favoritos usam atualização otimista, guardam o valor anterior e restauram esse valor em caso de falha. Após uma mutation confirmada, as consultas afetadas são invalidadas para reconciliar com a API. Skeletons preservam o espaço do catálogo, detalhe e resumo; a animação respeita `prefers-reduced-motion`.
 
@@ -44,9 +48,21 @@ O envio inclui `Idempotency-Key`. A chave é escopada por usuário e associada a
 
 Antes de criar o pedido, a API confere a sessão, carteira, rede, dados do colecionador, cupom, estoque, preços, taxa e validade da cotação. Uma mudança invalida a revisão anterior e exige nova confirmação. A UI bloqueia envio enquanto há mutation em andamento; a idempotência protege também reenvios após falhas de comunicação.
 
+A carteira deve pertencer à conta, a rede enviada precisa coincidir com a cadastrada e `collector.walletType` precisa ser igual a `Wallet.type`. Um tipo divergente retorna 422 `WALLET_TYPE_MISMATCH`, com `fields.walletType`. As validações devolvem chaves diretas do formulário em `fields`, incluindo `walletId`, `network`, `username`, `profileName` e `ensName`, para associação acessível das mensagens.
+
 Pedidos começam `pending` e avançam para `confirmed` ou `refused`. Esses estados finais são terminais. O recibo só aparece como compra concluída após `confirmed`, e reproduz uma cópia da cotação, carteira e dados do pedido. Uma futura alteração de preço não modifica seu snapshot.
 
 Na confirmação, a API baixa o estoque e remove apenas as quantidades compradas do carrinho. Uma recusa preserva os itens. Resultados pendentes também são processados ao consultar a API após refresh; o estado não depende exclusivamente de um timer em memória ou de um evento recebido enquanto a tela estava aberta.
+
+## Dados de conta e carteira
+
+`User` contém `id`, `name`, `username`, `email`, `ensName`, `walletNickname`, `avatar` e `bio`. `name` continua sendo o nome de exibição; `username` é um identificador distinto. O cadastro exige nome de exibição, nome de usuário, e-mail e senha, cria um ENS simulado válido com sufixo do identificador e define o apelido inicial da carteira como `Main wallet`.
+
+`Wallet` mantém `id`, `name`, `address`, `network` e `primary`, e acrescenta `nickname`, `profileName`, `type`, `referralCode`, `email`, `ensName` e `secondaryAddress?`. O nome de exibição e o apelido são campos distintos. `Collector` mantém `name` e `email`, e acrescenta `username`, `profileName`, `walletType`, `referralCode`, `ensName`, `secondaryAddress?` e `note?`. Novos pedidos persistem uma cópia dos dados validados do colecionador e da carteira escolhida.
+
+Os campos de identidade são obrigatórios; carteira secundária e observação são opcionais. Nome de perfil/colecionador e nome do perfil da carteira usam de 2 a 80 caracteres; nome de exibição da carteira e apelidos, de 1 a 60. Nome de usuário usa de 3 a 30 letras, números, `_` ou `-` e começa com letra ou número. E-mail tem formato válido e até 254 caracteres. ENS usa um slug de 3 a 63 letras/números/hífens, começa e termina com letra ou número e termina em `.eth`; não há resolução ENS externa. Código de indicação usa de 1 a 32 letras, números, `_` ou `-`. Carteira secundária aceita ENS ou endereço `0x` válido, e observação aceita até 280 caracteres.
+
+E-mail, nome de usuário e ENS são normalizados em minúsculas. Conflitos de perfil retornam 409 `EMAIL_CONFLICT`, `USERNAME_CONFLICT` ou `ENS_CONFLICT`, com as respectivas mensagens em `fields`. Repetir o endereço de uma carteira na mesma rede retorna 409 `WALLET_CONFLICT` com `fields.address`. A enumeração `WalletType` aceita `MetaMask`, `Coinbase Wallet` e `WalletConnect`; `Network` aceita `Ethereum` e `Polygon`.
 
 ## Contratos REST
 
@@ -59,12 +75,12 @@ Base: `/api`. JSON em ambos os sentidos. Erros retornam `{ code, message, fields
 | `GET /session`           | —                                                                                              | `{ user: User \| null }`                  |
 | `POST /session`          | `{ email, password }`                                                                          | `{ user }`                                |
 | `DELETE /session`        | —                                                                                              | `{ user: null }`                          |
-| `POST /register`         | `{ name, email, password, confirmPassword? }`                                                  | `{ user }`, status 201                    |
+| `POST /register`         | `{ name, username, email, password, confirmPassword? }`                                        | `{ user }`, status 201                    |
 | `GET /profile`           | Sessão                                                                                         | User                                      |
-| `PATCH /profile`         | `{ name, email, bio, avatar }`                                                                 | User atualizado                           |
-| `PUT /profile/password`  | `{ currentPassword, newPassword }`                                                             | `{ message }`                             |
+| `PATCH /profile`         | `{ name, username, email, ensName, walletNickname, bio, avatar }`                              | User atualizado                           |
+| `PUT /profile/password`  | `{ currentPassword, newPassword, confirmPassword? }`                                           | `{ message }`                             |
 | `GET /wallets`           | Sessão                                                                                         | Wallet[]                                  |
-| `POST /wallets`          | `{ name, address, network, primary }`                                                          | Wallet                                    |
+| `POST /wallets`          | Campos de Wallet descritos acima, sem `id`; `primary` pode ser omitido                         | Wallet                                    |
 | `PATCH /wallets/:id`     | Mesmos campos                                                                                  | Wallet atualizada                         |
 | `GET /favorites`         | Sessão                                                                                         | Identificadores dos NFTs favoritos        |
 | `POST /favorites/:id`    | Sessão                                                                                         | Identificadores atualizados               |
@@ -74,16 +90,16 @@ Base: `/api`. JSON em ambos os sentidos. Erros retornam `{ code, message, fields
 | `PATCH /cart/items/:id`  | `{ quantity }`                                                                                 | Carrinho atualizado                       |
 | `DELETE /cart/items/:id` | Identificador do item                                                                          | Carrinho atualizado                       |
 | `POST /quote`            | `{ coupon? }` (`""` remove)                                                                    | Quote completa                            |
-| `POST /orders`           | `{ quoteId, walletId, network, collector: { name, email } }` + `Idempotency-Key`               | Pedido, status 201                        |
+| `POST /orders`           | `{ quoteId, walletId, network, collector: Collector }` + `Idempotency-Key`                     | Pedido, status 201                        |
 | `GET /orders`            | `key?`                                                                                         | Pedidos da conta ou pedido da tentativa   |
 | `GET /orders/:id`        | Sessão do proprietário                                                                         | Pedido e snapshot do recibo               |
 | `GET /demo`              | —                                                                                              | Configuração atual                        |
 | `PATCH /demo`            | `{ scenario?, latency?, action?, ... }`                                                        | Configuração atualizada                   |
 | `DELETE /demo`           | —                                                                                              | Reset integral e configuração padrão      |
 
-Ordenações aceitas: `featured`, `price-asc`, `price-desc`, `name`, `newest`. Redes: `Ethereum` e `Polygon`. O endereço da carteira deve seguir `0x` mais 40 caracteres hexadecimais; há uma carteira principal por conta. Avatar aceita arquivo local PNG/JPEG/WebP de até 2 MB e é persistido como data URL.
+Ordenações aceitas: `featured`, `price-asc`, `price-desc`, `name`, `newest`. Redes: `Ethereum` e `Polygon`. O endereço da carteira deve seguir `0x` mais 40 caracteres hexadecimais; há uma carteira principal por conta. Avatar aceita PNG/JPEG/WebP/GIF de até 2 MB e é persistido como data URL; `avatar: ""` restaura o padrão. A senha exige ao menos oito caracteres, incluindo letra e número, e a confirmação, quando enviada, deve coincidir.
 
-Controles de demonstração: `expire-session`, `update-nft` (com `nftId`, `price?`, `stock?`), `replay-event` (com `old?`), `disconnect`, `reconnect` e `settle-orders`. Esses endpoints são controles da simulação, disponíveis no build de avaliação.
+Controles de demonstração: `expire-session`, `update-nft` (com `nftId`, `price?`, `stock?`), `replay-event` (com `old?`), `disconnect`, `reconnect` e `settle-orders`. `update-nft` altera a edição padrão e recalcula o estoque agregado antes de emitir o evento. Esses endpoints são controles da simulação, disponíveis no build de avaliação.
 
 ## Eventos Socket.IO
 

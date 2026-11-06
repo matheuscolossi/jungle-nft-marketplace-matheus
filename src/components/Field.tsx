@@ -6,14 +6,21 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   hint?: ReactNode;
 }
 
-export function Field({ label, error, hint, id, ...props }: FieldProps) {
+export function Field({
+  label,
+  error,
+  hint,
+  id,
+  "aria-describedby": describedBy,
+  "aria-invalid": invalid,
+  ...props
+}: FieldProps) {
   const generatedId = useId();
   const fieldId = id ?? generatedId;
-  const description = error
-    ? `${fieldId}-error`
-    : hint
-      ? `${fieldId}-hint`
-      : undefined;
+  const description =
+    [describedBy, hint && `${fieldId}-hint`, error && `${fieldId}-error`]
+      .filter(Boolean)
+      .join(" ") || undefined;
   return (
     <div className="field">
       <label htmlFor={fieldId}>
@@ -24,7 +31,7 @@ export function Field({ label, error, hint, id, ...props }: FieldProps) {
         {...props}
         id={fieldId}
         className={`input ${props.className ?? ""}`}
-        aria-invalid={Boolean(error)}
+        aria-invalid={error ? true : invalid}
         aria-describedby={description}
       />
       {error && (
@@ -32,7 +39,7 @@ export function Field({ label, error, hint, id, ...props }: FieldProps) {
           {error}
         </p>
       )}
-      {!error && hint && (
+      {hint && (
         <p className="field-hint" id={`${fieldId}-hint`}>
           {hint}
         </p>

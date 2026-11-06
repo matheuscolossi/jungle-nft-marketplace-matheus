@@ -18,7 +18,7 @@ function setConnection(state: ConnectionState) {
   connectionListeners.forEach((listener) => listener());
 }
 
-/** Import only after MSW has patched WebSocket; Socket.IO captures it at import time. */
+/** Importa o cliente depois que o MSW intercepta o WebSocket. */
 export function startRealtime(
   queryClient: QueryClient,
   userId: string | null,
@@ -48,7 +48,7 @@ export function startRealtime(
     const resource = `${event.type}:${event.resourceId}`;
     if (seen.has(event.id) || event.version <= (versions.get(resource) ?? -1))
       return;
-    // Terminal orders never return to pending, even if an invalid newer event arrives.
+    // Pedidos finalizados não voltam para pendentes.
     if (event.type === "order.updated" && terminalOrders.has(resource)) return;
     seen.add(event.id);
     versions.set(resource, event.version);

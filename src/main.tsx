@@ -5,6 +5,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { queryClient } from "./lib/query";
 import { SessionProvider } from "./lib/session";
 import "./styles.css";
+import "./account.css";
 
 async function start() {
   if (import.meta.env.VITE_ENABLE_MOCKS !== "false") {

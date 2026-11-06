@@ -29,6 +29,7 @@ export type CatalogSearch = {
   sort: string;
   page: number;
   available: boolean;
+  minPrice: string;
   maxPrice: string;
 };
 export function MarketPage() {
@@ -90,6 +91,15 @@ export function MarketPage() {
       <label className="field">
         Faixa de preço
         <input
+          aria-label="Preço mínimo em ETH"
+          type="number"
+          min="0"
+          step="0.1"
+          placeholder="Mínimo em ETH"
+          value={search.minPrice}
+          onChange={(e) => update({ minPrice: e.target.value })}
+        />
+        <input
           aria-label="Preço máximo em ETH"
           type="number"
           min="0"
@@ -116,6 +126,7 @@ export function MarketPage() {
             collection: "",
             sort: "featured",
             available: false,
+            minPrice: "",
             maxPrice: "",
           })
         }

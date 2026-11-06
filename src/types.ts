@@ -1,5 +1,6 @@
 export type Decimal = string;
 export type Network = "Ethereum" | "Polygon";
+export type WalletType = "MetaMask" | "Coinbase Wallet" | "WalletConnect";
 export interface Edition {
   id: string;
   name: string;
@@ -25,6 +26,9 @@ export interface Nft {
 export interface User {
   id: string;
   name: string;
+  username: string;
+  ensName: string;
+  walletNickname: string;
   email: string;
   avatar: string;
   bio: string;
@@ -32,6 +36,13 @@ export interface User {
 export interface Wallet {
   id: string;
   name: string;
+  nickname: string;
+  profileName: string;
+  type: WalletType;
+  referralCode: string;
+  email: string;
+  ensName: string;
+  secondaryAddress?: string;
   address: string;
   network: Network;
   primary: boolean;
@@ -75,6 +86,13 @@ export interface Quote {
 export interface Collector {
   name: string;
   email: string;
+  username: string;
+  profileName: string;
+  walletType: WalletType;
+  referralCode: string;
+  ensName: string;
+  secondaryAddress?: string;
+  note?: string;
 }
 export type OrderStatus = "pending" | "confirmed" | "refused";
 export interface Order {

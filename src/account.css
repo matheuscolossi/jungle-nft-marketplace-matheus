@@ -1,0 +1,134 @@
+/* O formulário fica sobre o destaque, preservando a leitura em telas menores. */
+.auth-composition {
+  position: relative;
+  isolation: isolate;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.9fr);
+  align-items: start;
+  gap: 32px;
+  padding: 45px 30px;
+}
+
+.auth-composition .auth-story {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  align-self: stretch;
+  min-height: 630px;
+  padding: 30px 0;
+}
+
+.auth-composition .auth-story > :not(img) {
+  max-width: 47%;
+}
+
+.auth-composition .auth-story img {
+  width: min(43%, 360px);
+  height: auto;
+  aspect-ratio: 1.1;
+  object-fit: cover;
+  margin-top: 25px;
+  border: 7px solid #38271a;
+  box-shadow: 0 15px 35px #0003;
+}
+
+.auth-composition .auth-panel {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  z-index: 1;
+  margin-top: 15px;
+  box-shadow: 0 20px 65px #0005;
+}
+
+.auth-composition .auth-panel .field-hint {
+  margin-top: 0;
+}
+
+.account-form .field,
+.account-form .input {
+  min-width: 0;
+}
+
+.account-form .form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-form .field select[aria-invalid="true"] {
+  border-color: #ffae98;
+}
+
+.avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-actions .btn {
+  white-space: normal;
+}
+
+.wallet-dialog {
+  max-width: 740px;
+}
+
+.wallet-dialog > h2 {
+  padding-right: 26px;
+}
+
+.wallet-dialog .error {
+  border: 1px solid #9b5e47;
+  background: #3c2119;
+  color: #ffc2ae;
+  border-radius: 4px;
+  padding: 12px;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+
+@container viewport (max-width: 800px) {
+  .auth-composition {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    padding: 28px 0;
+    min-height: 0;
+  }
+
+  .auth-composition .auth-story {
+    grid-column: 1;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .auth-composition .auth-story > :not(img) {
+    max-width: 100%;
+  }
+
+  .auth-composition .auth-story img {
+    display: none;
+  }
+
+  .auth-composition .auth-panel {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+}
+
+@container viewport (max-width: 600px) {
+  .account-form .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .avatar-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .avatar-actions .btn {
+    font-size: 10px;
+    padding: 8px 12px;
+  }
+}

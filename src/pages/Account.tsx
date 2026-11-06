@@ -19,11 +19,39 @@ import type { ApiError, User, Wallet } from "../types";
 
 type Errors = Record<string, string>;
 const emailIsValid = (value: string) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  value.trim().length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+const usernameIsValid = (value: string) =>
+  /^[a-z0-9][a-z0-9_-]{2,29}$/i.test(value.trim());
+const ensIsValid = (value: string) =>
+  /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]\.eth$/i.test(value.trim());
+const addressIsValid = (value: string) =>
+  /^0x[a-fA-F0-9]{40}$/.test(value.trim());
+
+// O foco acompanha tanto a validação local quanto os erros devolvidos pela API.
+function focusFirstInvalid(form: HTMLFormElement | null, fields: Errors) {
+  requestAnimationFrame(() => {
+    const controls = form?.querySelectorAll<HTMLElement>("[name]");
+    const first = Array.from(controls ?? []).find((control) =>
+      Boolean(fields[control.getAttribute("name") ?? ""]),
+    );
+    first?.focus();
+  });
+}
 function serverFields(error: unknown): Errors {
   return (
     (error as { response?: { data?: ApiError } })?.response?.data?.fields ?? {}
   );
+}
+function profileValues(profile: User) {
+  return {
+    name: profile.name,
+    username: profile.username,
+    email: profile.email,
+    ensName: profile.ensName,
+    walletNickname: profile.walletNickname,
+    bio: profile.bio,
+    avatar: profile.avatar,
+  };
 }
 function destination() {
   const redirect =
@@ -43,9 +71,11 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
     "register";
   const { refresh } = useSession();
   const navigate = useNavigate();
+  const formElement = useRef<HTMLFormElement | null>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [form, setForm] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -56,7 +86,11 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
       await refresh();
       await navigate({ to: destination() });
     },
-    onError: (error) => setErrors(serverFields(error)),
+    onError: (error) => {
+      const fields = serverFields(error);
+      setErrors(fields);
+      focusFirstInvalid(formElement.current, fields);
+    },
   });
   useEffect(() => {
     setErrors({});
@@ -68,9 +102,12 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
   };
   function submit(event: FormEvent) {
     event.preventDefault();
+    if (mutation.isPending) return;
     const next: Errors = {};
     if (register && form.name.trim().length < 2)
       next.name = "Informe um nome com pelo menos 2 caracteres.";
+    if (register && !usernameIsValid(form.username))
+      next.username = "Use de 3 a 30 letras, números, hífens ou sublinhados.";
     if (!emailIsValid(form.email)) next.email = "Informe um e-mail válido.";
     if (form.password.length < (register ? 8 : 1))
       next.password = register
@@ -79,11 +116,12 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
     if (register && form.password !== form.confirmPassword)
       next.confirmPassword = "As senhas precisam ser iguais.";
     setErrors(next);
+    focusFirstInvalid(formElement.current, next);
     if (!Object.keys(next).length) mutation.mutate();
   }
   const query = new URLSearchParams(window.location.search).toString();
   return (
-    <section className="auth-layout">
+    <section className="auth-layout auth-composition">
       <div className="auth-story">
         <p className="eyebrow">Bem-vindo à KURIO</p>
         <h1>
@@ -124,7 +162,12 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
             ? "Crie seu perfil de colecionador e conecte sua arte ao mundo."
             : "Entre para continuar explorando e colecionando."}
         </p>
-        <form onSubmit={submit} noValidate className="account-form">
+        <form
+          ref={formElement}
+          onSubmit={submit}
+          noValidate
+          className="account-form"
+        >
           {register && (
             <Field
               label="Nome"
@@ -137,6 +180,22 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
               maxLength={80}
             />
           )}
+          {register && (
+            <Field
+              label="Nome de usuário"
+              name="username"
+              autoComplete="username"
+              required
+              value={form.username}
+              onChange={(event) => set("username", event.target.value)}
+              error={errors.username}
+              hint="De 3 a 30 caracteres. Letras, números, hífens ou sublinhados."
+              minLength={3}
+              maxLength={30}
+              autoCapitalize="none"
+              spellCheck={false}
+            />
+          )}
           <Field
             label="E-mail"
             type="email"
@@ -146,7 +205,7 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
             value={form.email}
             onChange={(e) => set("email", e.target.value)}
             error={errors.email}
-            maxLength={160}
+            maxLength={254}
           />
           <Field
             label="Senha"
@@ -230,9 +289,18 @@ export function AccountSidebar() {
 export function ProfilePage() {
   const { user, refresh } = useSession();
   const queryClient = useQueryClient();
+  const profileForm = useRef<HTMLFormElement | null>(null);
+  const passwordForm = useRef<HTMLFormElement | null>(null);
+  const avatarRequest = useRef(0);
+  const formOwner = useRef<string | null>(null);
+  const profileDirty = useRef(false);
+  const [avatarReading, setAvatarReading] = useState(false);
   const [form, setForm] = useState({
     name: "",
+    username: "",
     email: "",
+    ensName: "",
+    walletNickname: "",
     bio: "",
     avatar: "",
   });
@@ -251,22 +319,37 @@ export function ProfilePage() {
     enabled: Boolean(user),
   });
   useEffect(() => {
-    if (profile.data)
-      setForm({
-        name: profile.data.name,
-        email: profile.data.email,
-        bio: profile.data.bio,
-        avatar: profile.data.avatar,
-      });
+    if (!profile.data) return;
+    const changingOwner = formOwner.current !== profile.data.id;
+    if (!changingOwner && profileDirty.current) return;
+    if (changingOwner) {
+      formOwner.current = profile.data.id;
+      profileDirty.current = false;
+      avatarRequest.current += 1;
+      setAvatarReading(false);
+    }
+    setForm(profileValues(profile.data));
   }, [profile.data]);
+  useEffect(
+    () => () => {
+      avatarRequest.current += 1;
+    },
+    [],
+  );
   const update = useMutation({
     mutationFn: () => api.patch<User>("/profile", form),
-    onSuccess: async () => {
+    onSuccess: async ({ data }) => {
+      profileDirty.current = false;
+      setForm(profileValues(data));
       await queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
       await refresh();
       setSaved("Perfil atualizado com sucesso.");
     },
-    onError: (error) => setErrors(serverFields(error)),
+    onError: (error) => {
+      const fields = serverFields(error);
+      setErrors(fields);
+      focusFirstInvalid(profileForm.current, fields);
+    },
   });
   const password = useMutation({
     mutationFn: () => api.put("/profile/password", passwords),
@@ -278,36 +361,68 @@ export function ProfilePage() {
       });
       setSaved("Senha alterada com sucesso.");
     },
-    onError: (error) => setPasswordErrors(serverFields(error)),
+    onError: (error) => {
+      const fields = serverFields(error);
+      setPasswordErrors(fields);
+      focusFirstInvalid(passwordForm.current, fields);
+    },
   });
+  function setProfile(key: keyof typeof form, value: string) {
+    profileDirty.current = true;
+    setForm((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({ ...current, [key]: "" }));
+    setSaved("");
+  }
+  function setPassword(key: keyof typeof passwords, value: string) {
+    setPasswords((current) => ({ ...current, [key]: value }));
+    setPasswordErrors((current) => ({ ...current, [key]: "" }));
+    setSaved("");
+  }
   function saveProfile(event: FormEvent) {
     event.preventDefault();
+    if (update.isPending || avatarReading) return;
     setSaved("");
     const next: Errors = {};
     if (form.name.trim().length < 2)
       next.name = "Informe um nome com pelo menos 2 caracteres.";
+    if (!usernameIsValid(form.username))
+      next.username = "Use de 3 a 30 letras, números, hífens ou sublinhados.";
     if (!emailIsValid(form.email)) next.email = "Informe um e-mail válido.";
+    if (!ensIsValid(form.ensName))
+      next.ensName = "Informe um nome ENS válido, incluindo .eth.";
+    if (!form.walletNickname.trim() || form.walletNickname.trim().length > 60)
+      next.walletNickname = "Informe um apelido com até 60 caracteres.";
     if (form.bio.length > 280) next.bio = "Use até 280 caracteres.";
+    if (errors.avatar) next.avatar = errors.avatar;
     setErrors(next);
+    focusFirstInvalid(profileForm.current, next);
     if (!Object.keys(next).length) update.mutate();
   }
   function savePassword(event: FormEvent) {
     event.preventDefault();
+    if (password.isPending) return;
     setSaved("");
     const next: Errors = {};
     if (!passwords.currentPassword)
       next.currentPassword = "Informe a senha atual.";
     if (passwords.newPassword.length < 8)
       next.newPassword = "Use pelo menos 8 caracteres.";
-    if (passwords.currentPassword === passwords.newPassword)
+    if (
+      passwords.newPassword &&
+      passwords.currentPassword === passwords.newPassword
+    )
       next.newPassword = "Escolha uma senha diferente da atual.";
     if (passwords.newPassword !== passwords.confirmPassword)
       next.confirmPassword = "As senhas precisam ser iguais.";
     setPasswordErrors(next);
+    focusFirstInvalid(passwordForm.current, next);
     if (!Object.keys(next).length) password.mutate();
   }
   async function chooseAvatar(file?: File) {
     if (!file) return;
+    const request = ++avatarRequest.current;
+    setAvatarReading(false);
+    setSaved("");
     if (
       !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
       file.size > 2 * 1024 * 1024
@@ -318,15 +433,33 @@ export function ProfilePage() {
       }));
       return;
     }
-    const avatar = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    setForm((s) => ({ ...s, avatar }));
-    setErrors((s) => ({ ...s, avatar: "" }));
-    setSaved("");
+    setAvatarReading(true);
+    profileDirty.current = true;
+    setErrors((current) => ({ ...current, avatar: "" }));
+    try {
+      const avatar = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      if (request === avatarRequest.current) setProfile("avatar", avatar);
+    } catch {
+      if (request === avatarRequest.current)
+        setErrors((current) => ({
+          ...current,
+          avatar:
+            "Não foi possível ler a imagem. Tente escolher outro arquivo.",
+        }));
+    } finally {
+      if (request === avatarRequest.current) setAvatarReading(false);
+    }
+  }
+  function removeAvatar() {
+    // Uma leitura anterior não pode restaurar a imagem depois da remoção.
+    avatarRequest.current += 1;
+    setAvatarReading(false);
+    setProfile("avatar", "");
   }
   if (!user) return <p role="status">Recuperando sua sessão…</p>;
   return (
@@ -352,150 +485,224 @@ export function ProfilePage() {
         {profile.data && (
           <>
             <form
+              ref={profileForm}
               onSubmit={saveProfile}
               noValidate
               className="account-form panel"
             >
-              <h2>Dados do perfil</h2>
-              <div className="avatar-editor">
-                <img
-                  src={form.avatar || "/assets/avatar.svg"}
-                  alt="Seu avatar"
-                  width="80"
-                  height="80"
-                  style={{ borderRadius: "50%", objectFit: "cover" }}
-                />
-                <div>
-                  <label className="btn btn-outline" htmlFor="avatar">
-                    Alterar avatar
-                  </label>
-                  <input
-                    id="avatar"
-                    name="avatar"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    onChange={(event) => {
-                      void chooseAvatar(event.target.files?.[0]);
-                      event.target.value = "";
-                    }}
-                    aria-describedby={
-                      errors.avatar ? "avatar-error" : "avatar-hint"
+              <h2 id="profile-fields-heading">Dados do perfil</h2>
+              <fieldset
+                disabled={update.isPending}
+                aria-labelledby="profile-fields-heading"
+                className="m-0 min-w-0 border-0 p-0"
+              >
+                <div className="avatar-editor">
+                  <img
+                    src={form.avatar || "/assets/avatar.svg"}
+                    alt="Seu avatar"
+                    width="80"
+                    height="80"
+                    style={{ borderRadius: "50%", objectFit: "cover" }}
+                  />
+                  <div>
+                    <div className="avatar-actions">
+                      <label className="btn btn-outline" htmlFor="avatar">
+                        Alterar avatar
+                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={
+                          update.isPending ||
+                          (!avatarReading &&
+                            !errors.avatar &&
+                            (!form.avatar ||
+                              form.avatar === "/assets/avatar.svg"))
+                        }
+                        onClick={removeAvatar}
+                      >
+                        Remover avatar
+                      </Button>
+                    </div>
+                    <input
+                      id="avatar"
+                      name="avatar"
+                      type="file"
+                      disabled={update.isPending}
+                      aria-busy={avatarReading}
+                      aria-invalid={Boolean(errors.avatar)}
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(event) => {
+                        void chooseAvatar(event.target.files?.[0]);
+                        event.target.value = "";
+                      }}
+                      aria-describedby={`avatar-hint${avatarReading ? " avatar-status" : ""}${errors.avatar ? " avatar-error" : ""}`}
+                    />
+                    <p className="field-hint" id="avatar-hint">
+                      PNG, JPEG ou WebP. Até 2 MB.
+                    </p>
+                    {avatarReading && (
+                      <p
+                        className="field-hint"
+                        id="avatar-status"
+                        role="status"
+                      >
+                        Lendo imagem…
+                      </p>
+                    )}
+                    {errors.avatar && (
+                      <p className="field-error" id="avatar-error">
+                        {errors.avatar}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="form-grid">
+                  <Field
+                    label="Nome de exibição"
+                    required
+                    name="name"
+                    autoComplete="name"
+                    value={form.name}
+                    maxLength={80}
+                    error={errors.name}
+                    onChange={(e) => setProfile("name", e.target.value)}
+                  />
+                  <Field
+                    label="Nome de usuário"
+                    required
+                    name="username"
+                    autoComplete="username"
+                    value={form.username}
+                    minLength={3}
+                    maxLength={30}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    error={errors.username}
+                    hint="De 3 a 30 caracteres. Letras, números, hífens ou sublinhados."
+                    onChange={(event) =>
+                      setProfile("username", event.target.value)
                     }
                   />
-                  <p className="field-hint" id="avatar-hint">
-                    PNG, JPEG ou WebP. Até 2 MB.
-                  </p>
-                  {errors.avatar && (
-                    <p className="field-error" id="avatar-error">
-                      {errors.avatar}
+                  <Field
+                    label="E-mail"
+                    required
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={form.email}
+                    maxLength={254}
+                    error={errors.email}
+                    onChange={(e) => setProfile("email", e.target.value)}
+                  />
+                  <Field
+                    label="Nome ENS"
+                    required
+                    name="ensName"
+                    value={form.ensName}
+                    maxLength={67}
+                    error={errors.ensName}
+                    placeholder="seunome.eth"
+                    hint="Inclua o sufixo .eth, por exemplo: colecionador.eth."
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    onChange={(event) =>
+                      setProfile("ensName", event.target.value)
+                    }
+                  />
+                  <Field
+                    label="Apelido da carteira"
+                    required
+                    name="walletNickname"
+                    value={form.walletNickname}
+                    maxLength={60}
+                    error={errors.walletNickname}
+                    onChange={(event) =>
+                      setProfile("walletNickname", event.target.value)
+                    }
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="bio">Sobre você</label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    className="input"
+                    maxLength={280}
+                    value={form.bio}
+                    onChange={(e) => setProfile("bio", e.target.value)}
+                    rows={4}
+                    aria-invalid={Boolean(errors.bio)}
+                    aria-describedby={errors.bio ? "bio-error" : undefined}
+                  />
+                  {errors.bio && (
+                    <p className="field-error" id="bio-error">
+                      {errors.bio}
                     </p>
                   )}
                 </div>
-              </div>
-              <div className="form-grid">
-                <Field
-                  label="Nome de exibição"
-                  required
-                  name="name"
-                  autoComplete="name"
-                  value={form.name}
-                  maxLength={80}
-                  error={errors.name}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, name: e.target.value }))
-                  }
-                />
-                <Field
-                  label="E-mail"
-                  required
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={form.email}
-                  maxLength={160}
-                  error={errors.email}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, email: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="bio">Sobre você</label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  className="input"
-                  maxLength={280}
-                  value={form.bio}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, bio: e.target.value }))
-                  }
-                  rows={4}
-                  aria-invalid={Boolean(errors.bio)}
-                  aria-describedby={errors.bio ? "bio-error" : undefined}
-                />
-                {errors.bio && (
-                  <p className="field-error" id="bio-error">
-                    {errors.bio}
-                  </p>
-                )}
-              </div>
+              </fieldset>
               {update.isError && (
                 <p className="error" role="alert">
                   {err(update.error)}
                 </p>
               )}
-              <Button type="submit" disabled={update.isPending}>
+              <Button
+                type="submit"
+                disabled={update.isPending || avatarReading}
+              >
                 {update.isPending ? "Salvando…" : "Salvar alterações"}
               </Button>
             </form>
             <form
+              ref={passwordForm}
               onSubmit={savePassword}
               noValidate
               className="account-form panel"
             >
-              <h2>Alterar senha</h2>
-              <Field
-                label="Senha atual"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={passwords.currentPassword}
-                error={passwordErrors.currentPassword}
-                onChange={(e) =>
-                  setPasswords((s) => ({
-                    ...s,
-                    currentPassword: e.target.value,
-                  }))
-                }
-              />
-              <div className="form-grid">
+              <h2 id="password-fields-heading">Alterar senha</h2>
+              <fieldset
+                disabled={password.isPending}
+                aria-labelledby="password-fields-heading"
+                className="m-0 min-w-0 border-0 p-0"
+              >
                 <Field
-                  label="Nova senha"
+                  label="Senha atual"
                   type="password"
-                  autoComplete="new-password"
+                  name="currentPassword"
+                  autoComplete="current-password"
                   required
-                  value={passwords.newPassword}
-                  error={passwordErrors.newPassword}
+                  value={passwords.currentPassword}
+                  error={passwordErrors.currentPassword}
                   onChange={(e) =>
-                    setPasswords((s) => ({ ...s, newPassword: e.target.value }))
+                    setPassword("currentPassword", e.target.value)
                   }
                 />
-                <Field
-                  label="Confirmar nova senha"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={passwords.confirmPassword}
-                  error={passwordErrors.confirmPassword}
-                  onChange={(e) =>
-                    setPasswords((s) => ({
-                      ...s,
-                      confirmPassword: e.target.value,
-                    }))
-                  }
-                />
-              </div>
+                <div className="form-grid">
+                  <Field
+                    label="Nova senha"
+                    type="password"
+                    name="newPassword"
+                    autoComplete="new-password"
+                    required
+                    value={passwords.newPassword}
+                    error={passwordErrors.newPassword}
+                    onChange={(e) => setPassword("newPassword", e.target.value)}
+                  />
+                  <Field
+                    label="Confirmar nova senha"
+                    type="password"
+                    name="confirmPassword"
+                    autoComplete="new-password"
+                    required
+                    value={passwords.confirmPassword}
+                    error={passwordErrors.confirmPassword}
+                    onChange={(e) =>
+                      setPassword("confirmPassword", e.target.value)
+                    }
+                  />
+                </div>
+              </fieldset>
               {password.isError && (
                 <p className="error" role="alert">
                   {err(password.error)}
@@ -515,8 +722,15 @@ export function ProfilePage() {
   );
 }
 
-const emptyWallet = {
+const emptyWallet: Omit<Wallet, "id"> = {
   name: "",
+  nickname: "",
+  profileName: "",
+  type: "MetaMask",
+  referralCode: "JUNGLE10",
+  email: "",
+  ensName: "",
+  secondaryAddress: "",
   address: "",
   network: "Ethereum" as Wallet["network"],
   primary: false,
@@ -530,7 +744,9 @@ export function WalletsPage() {
   const [errors, setErrors] = useState<Errors>({});
   const [saved, setSaved] = useState("");
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const addTrigger = useRef<HTMLButtonElement | null>(null);
   const dialog = useRef<HTMLDivElement | null>(null);
+  const walletForm = useRef<HTMLFormElement | null>(null);
   const wallets = useQuery({
     queryKey: ["wallets", user?.id],
     queryFn: async ({ signal }) =>
@@ -547,7 +763,11 @@ export function WalletsPage() {
       setOpen(false);
       setSaved("Carteira salva com sucesso.");
     },
-    onError: (error) => setErrors(serverFields(error)),
+    onError: (error) => {
+      const fields = serverFields(error);
+      setErrors(fields);
+      focusFirstInvalid(walletForm.current, fields);
+    },
   });
   function edit(wallet: Wallet | undefined, origin: HTMLButtonElement) {
     trigger.current = origin;
@@ -556,24 +776,69 @@ export function WalletsPage() {
       wallet
         ? {
             name: wallet.name,
+            nickname: wallet.nickname,
+            profileName: wallet.profileName,
+            type: wallet.type,
+            referralCode: wallet.referralCode,
+            email: wallet.email,
+            ensName: wallet.ensName,
+            secondaryAddress: wallet.secondaryAddress ?? "",
             address: wallet.address,
             network: wallet.network,
             primary: wallet.primary,
           }
-        : { ...emptyWallet, primary: !wallets.data?.length },
+        : {
+            ...emptyWallet,
+            nickname: user?.walletNickname ?? "",
+            profileName: user?.name ?? "",
+            email: user?.email ?? "",
+            ensName: user?.ensName ?? "",
+            primary: wallets.data?.length === 0,
+          },
     );
     setErrors({});
     update.reset();
+    setSaved("");
     setOpen(true);
+  }
+  function setWallet<Key extends keyof typeof form>(
+    key: Key,
+    value: (typeof form)[Key],
+  ) {
+    setForm((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({ ...current, [key]: "" }));
   }
   function submit(event: FormEvent) {
     event.preventDefault();
+    if (update.isPending) return;
     const next: Errors = {};
-    if (form.name.trim().length < 2) next.name = "Dê um nome à sua carteira.";
-    if (!/^0x[a-fA-F0-9]{40}$/.test(form.address))
+    if (!form.name.trim()) next.name = "Dê um nome à sua carteira.";
+    if (!form.nickname.trim())
+      next.nickname = "Informe um apelido para a carteira.";
+    if (form.profileName.trim().length < 2)
+      next.profileName =
+        "Informe um nome do perfil com pelo menos 2 caracteres.";
+    if (!addressIsValid(form.address))
       next.address =
         "Use um endereço com 0x seguido de 40 caracteres hexadecimais.";
+    if (!emailIsValid(form.email)) next.email = "Informe um e-mail válido.";
+    if (!ensIsValid(form.ensName))
+      next.ensName = "Informe um nome ENS válido, incluindo .eth.";
+    if (!/^[a-z0-9_-]{1,32}$/i.test(form.referralCode.trim()))
+      next.referralCode = "Use até 32 letras, números, hífens ou sublinhados.";
+    if (
+      form.secondaryAddress?.trim() &&
+      !addressIsValid(form.secondaryAddress) &&
+      !ensIsValid(form.secondaryAddress)
+    )
+      next.secondaryAddress =
+        "Informe um nome ENS com .eth ou um endereço de carteira válido.";
+    if (!["Ethereum", "Polygon"].includes(form.network))
+      next.network = "Selecione uma rede válida.";
+    if (!["MetaMask", "Coinbase Wallet", "WalletConnect"].includes(form.type))
+      next.type = "Selecione um tipo de carteira válido.";
     setErrors(next);
+    focusFirstInvalid(walletForm.current, next);
     if (!Object.keys(next).length) update.mutate();
   }
   if (!user) return <p role="status">Recuperando sua sessão…</p>;
@@ -586,7 +851,10 @@ export function WalletsPage() {
             <p className="eyebrow">CONTA DO COLECIONADOR</p>
             <h1>Suas carteiras</h1>
           </div>
-          <Button onClick={(event) => edit(undefined, event.currentTarget)}>
+          <Button
+            ref={addTrigger}
+            onClick={(event) => edit(undefined, event.currentTarget)}
+          >
             <Plus size={16} aria-hidden="true" />
             Adicionar carteira
           </Button>
@@ -629,8 +897,16 @@ export function WalletsPage() {
                     : "CARTEIRA SECUNDÁRIA"}
                 </span>
                 <h2>{wallet.name}</h2>
-                <p>{wallet.network}</p>
+                <p>
+                  {wallet.nickname} · {wallet.network} · {wallet.type}
+                </p>
                 <p className="wallet-address">{wallet.address}</p>
+                <p className="wallet-address">{wallet.ensName}</p>
+                {wallet.secondaryAddress && (
+                  <p className="wallet-address">
+                    Secundária: {wallet.secondaryAddress}
+                  </p>
+                )}
               </div>
               <Button
                 variant="outline"
@@ -655,14 +931,17 @@ export function WalletsPage() {
             <Dialog.Overlay className="dialog-overlay" />
             <Dialog.Content
               ref={dialog}
-              className="dialog-content panel"
+              className="dialog-content panel wallet-dialog"
               onOpenAutoFocus={(event) => {
                 event.preventDefault();
                 dialog.current?.querySelector("input")?.focus();
               }}
               onCloseAutoFocus={(event) => {
                 event.preventDefault();
-                trigger.current?.focus();
+                const origin = trigger.current?.isConnected
+                  ? trigger.current
+                  : addTrigger.current;
+                origin?.focus();
               }}
             >
               <Dialog.Title>
@@ -679,50 +958,175 @@ export function WalletsPage() {
               >
                 <X size={20} />
               </Dialog.Close>
-              <form onSubmit={submit} noValidate className="account-form">
-                <Field
-                  label="Nome da carteira"
-                  required
-                  value={form.name}
-                  maxLength={60}
-                  error={errors.name}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, name: e.target.value }))
-                  }
-                />
+              <form
+                ref={walletForm}
+                onSubmit={submit}
+                noValidate
+                className="account-form"
+              >
+                <div className="form-grid">
+                  <Field
+                    label="Nome de exibição"
+                    name="name"
+                    required
+                    value={form.name}
+                    maxLength={60}
+                    error={errors.name}
+                    onChange={(event) => setWallet("name", event.target.value)}
+                  />
+                  <Field
+                    label="Apelido da carteira"
+                    name="nickname"
+                    required
+                    value={form.nickname}
+                    maxLength={60}
+                    error={errors.nickname}
+                    onChange={(event) =>
+                      setWallet("nickname", event.target.value)
+                    }
+                  />
+                  <div className="field">
+                    <label htmlFor="wallet-network">
+                      Rede <span aria-hidden="true">*</span>
+                    </label>
+                    <select
+                      id="wallet-network"
+                      name="network"
+                      className="input"
+                      required
+                      value={form.network}
+                      aria-invalid={Boolean(errors.network)}
+                      aria-describedby={
+                        errors.network ? "wallet-network-error" : undefined
+                      }
+                      onChange={(event) =>
+                        setWallet(
+                          "network",
+                          event.target.value as Wallet["network"],
+                        )
+                      }
+                    >
+                      <option>Ethereum</option>
+                      <option>Polygon</option>
+                    </select>
+                    {errors.network && (
+                      <p className="field-error" id="wallet-network-error">
+                        {errors.network}
+                      </p>
+                    )}
+                  </div>
+                  <Field
+                    label="Nome do perfil"
+                    name="profileName"
+                    required
+                    value={form.profileName}
+                    minLength={2}
+                    maxLength={80}
+                    error={errors.profileName}
+                    onChange={(event) =>
+                      setWallet("profileName", event.target.value)
+                    }
+                  />
+                </div>
                 <Field
                   label="Endereço da carteira"
+                  name="address"
                   required
                   value={form.address}
                   error={errors.address}
                   placeholder="0x…"
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, address: e.target.value }))
+                  maxLength={42}
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  onChange={(event) => setWallet("address", event.target.value)}
+                />
+                <Field
+                  label="ENS ou carteira secundária"
+                  name="secondaryAddress"
+                  value={form.secondaryAddress ?? ""}
+                  maxLength={67}
+                  error={errors.secondaryAddress}
+                  hint="Opcional. Use um nome com .eth ou um endereço iniciado em 0x."
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  onChange={(event) =>
+                    setWallet("secondaryAddress", event.target.value)
                   }
                 />
-                <div className="field">
-                  <label htmlFor="wallet-network">Rede</label>
-                  <select
-                    id="wallet-network"
-                    className="input"
-                    value={form.network}
-                    onChange={(e) =>
-                      setForm((s) => ({
-                        ...s,
-                        network: e.target.value as Wallet["network"],
-                      }))
+                <div className="form-grid">
+                  <div className="field">
+                    <label htmlFor="wallet-type">
+                      Tipo da carteira <span aria-hidden="true">*</span>
+                    </label>
+                    <select
+                      id="wallet-type"
+                      name="type"
+                      className="input"
+                      required
+                      value={form.type}
+                      aria-invalid={Boolean(errors.type)}
+                      aria-describedby={
+                        errors.type ? "wallet-type-error" : undefined
+                      }
+                      onChange={(event) =>
+                        setWallet("type", event.target.value as Wallet["type"])
+                      }
+                    >
+                      <option>MetaMask</option>
+                      <option>Coinbase Wallet</option>
+                      <option>WalletConnect</option>
+                    </select>
+                    {errors.type && (
+                      <p className="field-error" id="wallet-type-error">
+                        {errors.type}
+                      </p>
+                    )}
+                  </div>
+                  <Field
+                    label="Código de indicação"
+                    name="referralCode"
+                    required
+                    value={form.referralCode}
+                    maxLength={32}
+                    error={errors.referralCode}
+                    onChange={(event) =>
+                      setWallet("referralCode", event.target.value)
                     }
-                  >
-                    <option>Ethereum</option>
-                    <option>Polygon</option>
-                  </select>
+                  />
+                  <Field
+                    label="E-mail"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={form.email}
+                    maxLength={254}
+                    error={errors.email}
+                    onChange={(event) => setWallet("email", event.target.value)}
+                  />
+                  <Field
+                    label="Nome ENS"
+                    name="ensName"
+                    required
+                    value={form.ensName}
+                    maxLength={67}
+                    error={errors.ensName}
+                    placeholder="seunome.eth"
+                    hint="Inclua o sufixo .eth."
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    onChange={(event) =>
+                      setWallet("ensName", event.target.value)
+                    }
+                  />
                 </div>
                 <label className="checkbox-label">
                   <input
+                    name="primary"
                     type="checkbox"
                     checked={form.primary}
-                    onChange={(e) =>
-                      setForm((s) => ({ ...s, primary: e.target.checked }))
+                    onChange={(event) =>
+                      setWallet("primary", event.target.checked)
                     }
                   />
                   Definir como carteira principal

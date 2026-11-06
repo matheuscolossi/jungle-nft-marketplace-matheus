@@ -1,13 +1,25 @@
 import { delay, http, HttpResponse } from "msw";
-import type { Collector, Network, Scenario, User, Wallet } from "../types";
+import type {
+  Collector,
+  Network,
+  Scenario,
+  User,
+  Wallet,
+  WalletType,
+} from "../types";
 import { toWei } from "../lib/money";
+import { availableStock } from "../lib/availability";
 import {
   account,
+  addressPattern,
   changeCart,
   controlConnection,
   createQuote,
   currentCart,
   database,
+  defaultEnsName,
+  emailPattern,
+  ensPattern,
   findNft,
   getCurrentUser,
   getDemoState,
@@ -18,16 +30,20 @@ import {
   nextId,
   placeOrder,
   readCart,
+  referralPattern,
   removeCartItem,
   replayEvent,
   resetDatabase,
   saveDatabase,
   settleOrders,
+  trimmedText,
   updateNft,
+  usernamePattern,
+  validSecondaryAddress,
+  walletTypes,
 } from "./database";
 
 type Body = Record<string, unknown>;
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const scenarios: Scenario[] = [
   "success",
   "empty",
@@ -55,19 +71,27 @@ async function readBody(request: Request): Promise<Body> {
     );
   }
 }
-const text = (value: unknown) =>
-  typeof value === "string" ? value.trim() : "";
+const text = trimmedText;
 function validateProfile(
   body: Body,
   registering = false,
-): { name: string; email: string } {
+): Pick<User, "name" | "email" | "username" | "ensName" | "walletNickname"> {
   const name = text(body.name),
     email = text(body.email).toLowerCase(),
+    username = text(body.username).toLowerCase(),
+    ensName = text(body.ensName).toLowerCase(),
+    walletNickname = text(body.walletNickname),
     fields: Record<string, string> = {};
   if (name.length < 2 || name.length > 80)
     fields.name = "Use between 2 and 80 characters.";
   if (!emailPattern.test(email) || email.length > 254)
     fields.email = "Enter a valid email address.";
+  if (!usernamePattern.test(username))
+    fields.username = "Use 3 to 30 letters, numbers, underscores or hyphens.";
+  if (!registering && !ensPattern.test(ensName))
+    fields.ensName = "Enter an ENS name with 3 to 63 characters before .eth.";
+  if (!registering && (!walletNickname || walletNickname.length > 60))
+    fields.walletNickname = "Use a nickname of up to 60 characters.";
   if (
     registering &&
     (typeof body.password !== "string" ||
@@ -90,7 +114,38 @@ function validateProfile(
       "Check the highlighted fields.",
       fields,
     );
-  return { name, email };
+  return { name, email, username, ensName, walletNickname };
+}
+
+function assertProfileAvailable(
+  fields: Pick<User, "email" | "username" | "ensName">,
+  userId?: string,
+) {
+  const others = database().accounts.filter((item) => item.user.id !== userId);
+  const conflicts: Record<string, string> = {};
+  if (others.some((item) => item.user.email.toLowerCase() === fields.email))
+    conflicts.email = "This email is already registered.";
+  if (
+    others.some((item) => item.user.username.toLowerCase() === fields.username)
+  )
+    conflicts.username = "This username is already registered.";
+  if (
+    fields.ensName &&
+    others.some((item) => item.user.ensName.toLowerCase() === fields.ensName)
+  )
+    conflicts.ensName = "This ENS name is already registered.";
+  const first = Object.keys(conflicts)[0];
+  if (first)
+    throw new MockError(
+      409,
+      first === "email"
+        ? "EMAIL_CONFLICT"
+        : first === "username"
+          ? "USERNAME_CONFLICT"
+          : "ENS_CONFLICT",
+      "Some account details are already registered.",
+      conflicts,
+    );
 }
 function assertSessionScenario() {
   if (getDemoState().scenario === "unauthorized") {
@@ -212,7 +267,7 @@ export const handlers = [
                 nft.collection === collection) &&
               (!min || toWei(nft.price) >= toWei(min)) &&
               (!max || toWei(nft.price) <= toWei(max)) &&
-              (params.get("available") !== "true" || nft.stock > 0),
+              (params.get("available") !== "true" || availableStock(nft) > 0),
           );
     const comparePrice = (a: string, b: string) =>
       toWei(a) < toWei(b) ? -1 : toWei(a) > toWei(b) ? 1 : 0;
@@ -281,16 +336,13 @@ export const handlers = [
   route("post", "/register", async (request) => {
     const body = await readBody(request),
       fields = validateProfile(body, true);
-    if (database().accounts.some((item) => item.user.email === fields.email))
-      throw new MockError(
-        409,
-        "EMAIL_CONFLICT",
-        "An account already uses this email.",
-        { email: "This email is already registered." },
-      );
+    assertProfileAvailable(fields);
+    const id = nextId("registered-user");
     const user: User = {
-      id: nextId("registered-user"),
+      id,
       ...fields,
+      ensName: defaultEnsName(fields.username, id.replace(/[^a-z0-9]/gi, "")),
+      walletNickname: "Main wallet",
       avatar: "/assets/avatar.svg",
       bio: "",
     };
@@ -321,18 +373,7 @@ export const handlers = [
     const owner = account(),
       body = await readBody(request),
       fields = validateProfile(body);
-    if (
-      database().accounts.some(
-        (item) =>
-          item.user.id !== owner.user.id && item.user.email === fields.email,
-      )
-    )
-      throw new MockError(
-        409,
-        "EMAIL_CONFLICT",
-        "An account already uses this email.",
-        { email: "This email is already registered." },
-      );
+    assertProfileAvailable(fields, owner.user.id);
     if (getDemoState().scenario === "validation-error")
       throw new MockError(
         422,
@@ -341,7 +382,10 @@ export const handlers = [
         { name: "Choose a different display name." },
       );
     const bio = text(body.bio),
-      avatar = text(body.avatar) || owner.user.avatar;
+      avatar =
+        body.avatar === undefined
+          ? owner.user.avatar
+          : text(body.avatar) || "/assets/avatar.svg";
     if (bio.length > 280)
       throw new MockError(422, "VALIDATION", "Your bio is too long.", {
         bio: "Use at most 280 characters.",
@@ -379,6 +423,10 @@ export const handlers = [
         newPassword:
           "Use at least 8 characters, including a letter and a number.",
       });
+    if (body.confirmPassword !== undefined && body.confirmPassword !== next)
+      throw new MockError(422, "VALIDATION", "The passwords do not match.", {
+        confirmPassword: "The passwords do not match.",
+      });
     owner.passwordHash = await hashPassword(next);
     saveDatabase();
     return { message: "Password updated." };
@@ -396,12 +444,36 @@ export const handlers = [
         const owner = account(),
           body = await readBody(request),
           name = text(body.name),
+          nickname = text(body.nickname),
+          profileName = text(body.profileName),
+          type = text(body.type),
+          referralCode = text(body.referralCode),
+          email = text(body.email).toLowerCase(),
+          ensName = text(body.ensName).toLowerCase(),
+          secondaryAddress = text(body.secondaryAddress),
           address = text(body.address),
           network = text(body.network),
           fields: Record<string, string> = {};
         if (!name || name.length > 60)
           fields.name = "Use a name of up to 60 characters.";
-        if (!/^0x[a-fA-F0-9]{40}$/.test(address))
+        if (!nickname || nickname.length > 60)
+          fields.nickname = "Use a nickname of up to 60 characters.";
+        if (profileName.length < 2 || profileName.length > 80)
+          fields.profileName = "Use between 2 and 80 characters.";
+        if (!walletTypes.includes(type as WalletType))
+          fields.type = "Select MetaMask, Coinbase Wallet or WalletConnect.";
+        if (!referralPattern.test(referralCode))
+          fields.referralCode =
+            "Use 1 to 32 letters, numbers, underscores or hyphens.";
+        if (!emailPattern.test(email) || email.length > 254)
+          fields.email = "Enter a valid email address.";
+        if (!ensPattern.test(ensName))
+          fields.ensName =
+            "Enter an ENS name with 3 to 63 characters before .eth.";
+        if (!validSecondaryAddress(secondaryAddress))
+          fields.secondaryAddress =
+            "Enter a valid ENS name or a 0x wallet address.";
+        if (!addressPattern.test(address))
           fields.address = "Enter a 0x address with 40 hexadecimal characters.";
         if (!["Ethereum", "Polygon"].includes(network))
           fields.network = "Select Ethereum or Polygon.";
@@ -440,6 +512,13 @@ export const handlers = [
         const wallet: Wallet = {
           id: existing?.id ?? nextId("wallet"),
           name,
+          nickname,
+          profileName,
+          type: type as WalletType,
+          referralCode,
+          email,
+          ensName,
+          secondaryAddress: secondaryAddress || undefined,
           address,
           network: network as Network,
           primary,

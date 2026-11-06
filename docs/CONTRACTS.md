@@ -18,11 +18,11 @@ All application requests use the Axios client with `/api` as the base URL. MSW i
 | GET           | `/session`                 | —                                                                                                              | `{ user: User \| null }`; expired sessions resolve to null.                                                                       |
 | POST          | `/session`                 | `{ email, password }`                                                                                          | `{ user }`; merges visitor quantities into the account cart, limited to stock.                                                    |
 | DELETE        | `/session`                 | —                                                                                                              | `{ user: null }`; terminates subscriptions from the former session.                                                               |
-| POST          | `/register`                | `{ name, email, password, confirmPassword }`                                                                   | 201 `{ user }`, creates session; duplicate email is 409.                                                                          |
-| GET / PATCH   | `/profile`                 | PATCH `{ name, email, bio, avatar }`                                                                           | `User`; avatar accepts local assets or supported image data URLs up to 2 MB.                                                      |
-| PUT           | `/profile/password`        | `{ currentPassword, newPassword, confirmPassword }`                                                            | `{ message }`; validates the existing password and strength.                                                                      |
+| POST          | `/register`                | `{ name, username, email, password, confirmPassword? }`                                                        | 201 `{ user }`, cria sessão; e-mail ou nome de usuário duplicado retorna 409.                                                     |
+| GET / PATCH   | `/profile`                 | PATCH `{ name, username, email, ensName, walletNickname, bio, avatar }`                                        | `User`; avatar accepts local assets or supported image data URLs up to 2 MB; `avatar: ""` restaura o avatar padrão.               |
+| PUT           | `/profile/password`        | `{ currentPassword, newPassword, confirmPassword? }`                                                           | `{ message }`; valida senha atual, força da nova senha e confirmação quando enviada.                                              |
 | GET           | `/wallets`                 | —                                                                                                              | `Wallet[]`, scoped to the account.                                                                                                |
-| POST / PATCH  | `/wallets`, `/wallets/:id` | `{ name, address, network, primary }`                                                                          | `Wallet`; hexadecimal `0x` address, Ethereum/Polygon; one primary wallet per account.                                             |
+| POST / PATCH  | `/wallets`, `/wallets/:id` | Campos de `Wallet` abaixo, sem `id`                                                                            | `Wallet`; endereço hexadecimal `0x`, Ethereum/Polygon; uma carteira principal por conta.                                          |
 | GET           | `/favorites`               | —                                                                                                              | NFT ID array for the account.                                                                                                     |
 | POST / DELETE | `/favorites/:id`           | —                                                                                                              | Updated ID array. UI changes optimistically and rolls back on failure.                                                            |
 | GET           | `/cart`                    | —                                                                                                              | `Cart`, with live NFT and edition snapshots; visitor and account carts are separate.                                              |
@@ -30,9 +30,50 @@ All application requests use the Axios client with `/api` as the base URL. MSW i
 | PATCH         | `/cart/items/:id`          | `{ quantity }`                                                                                                 | Updated `Cart`; replaces quantity, checks integer/stock limits.                                                                   |
 | DELETE        | `/cart/items/:id`          | —                                                                                                              | Updated `Cart`; item IDs have form `nftId:editionId`.                                                                             |
 | POST          | `/quote`                   | `{ coupon?: string }`                                                                                          | `Quote`; server-calculated items, subtotal, discount, network fee, total, fingerprint, and expiry. Empty coupon removes discount. |
-| POST          | `/orders`                  | Header `Idempotency-Key`; `{ quoteId, walletId, network, collector: { name, email } }`                         | 201 `Order` initially pending; revalidates session, quote, stock, wallet and network.                                             |
+| POST          | `/orders`                  | Header `Idempotency-Key`; `{ quoteId, walletId, network, collector: Collector }`                               | 201 `Order` inicialmente pendente; revalida sessão, cotação, estoque, carteira, rede e dados do colecionador.                     |
 | GET           | `/orders/:id`              | —                                                                                                              | Account-owned `Order`; settles due pending outcomes and returns the immutable purchase snapshot.                                  |
 | GET           | `/orders?key=…`            | Original idempotency key                                                                                       | Recovers the same order after response loss. Without a key, lists this account's orders.                                          |
+
+## Dados de perfil, carteira e colecionador
+
+Os contratos atuais são os de `src/types.ts`. Os campos de texto são aparados antes de persistir; e-mail, nome de usuário e ENS são salvos em minúsculas. `User.name` continua sendo o nome de exibição, distinto de `username`.
+
+| Contrato    | Campos                                                                                                                                                                                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `User`      | `id`, `name`, `username`, `email`, `ensName`, `walletNickname`, `avatar`, `bio`: strings.                                                                                                                                                                     |
+| `Wallet`    | `id`, `name`, `nickname`, `profileName`, `address`, `referralCode`, `email`, `ensName`: strings; `type: WalletType`; `network: Network`; `primary: boolean`; `secondaryAddress?: string`. `name` é o nome de exibição da carteira e `nickname` é seu apelido. |
+| `Collector` | `name`, `username`, `email`, `profileName`, `referralCode`, `ensName`: strings; `walletType: WalletType`; `secondaryAddress?: string`; `note?: string`. Esses dados são copiados para o pedido.                                                               |
+
+`Network` aceita `Ethereum` ou `Polygon`. `WalletType` aceita `MetaMask`, `Coinbase Wallet` ou `WalletConnect`. Os campos de identidade de `User`, `Wallet` e `Collector` são obrigatórios; `bio` pode ficar vazio, o avatar possui valor padrão e `secondaryAddress` e `note` são opcionais. Ao cadastrar uma carteira, `primary` pode ser omitido: a primeira se torna principal e a conta sempre mantém uma principal.
+
+Validações aplicadas pela API:
+
+- `name` de perfil/colecionador e `profileName`: entre 2 e 80 caracteres; `Wallet.name`: entre 1 e 60.
+- `username`: entre 3 e 30 caracteres, começa com letra ou número e aceita letras, números, `_` e `-` (`^[a-z0-9][a-z0-9_-]{2,29}$`, sem diferenciar maiúsculas).
+- `nickname` e `walletNickname`: entre 1 e 60 caracteres; `referralCode`: entre 1 e 32 letras, números, `_` ou `-`.
+- `email`: formato de e-mail e até 254 caracteres. `ensName`: nome simulado terminado em `.eth`, com slug de 3 a 63 caracteres; começa e termina com letra ou número e aceita hífen no interior. Não há consulta a um registro ENS real.
+- `address`: `0x` seguido de 40 caracteres hexadecimais. `secondaryAddress`, quando preenchido, aceita esse endereço ou um ENS no formato acima.
+- `bio` e `note`: até 280 caracteres. A senha exige ao menos oito caracteres, incluindo letra e número; a confirmação, quando enviada, precisa coincidir.
+
+O cadastro exige `name`, `username`, `email` e `password`; cria um ENS válido com sufixo do identificador e o apelido inicial `Main wallet`. Os demais dados do perfil podem ser editados depois. Conflitos retornam 409 com `EMAIL_CONFLICT`, `USERNAME_CONFLICT` ou `ENS_CONFLICT` e `fields` para todos os campos conflitantes. Carteira repetida na mesma rede retorna `WALLET_CONFLICT`, com `fields.address`.
+
+No checkout, a carteira precisa pertencer à conta e `network` deve coincidir com a rede cadastrada. `collector.walletType` deve ser igual a `Wallet.type`: divergência retorna 422 `WALLET_TYPE_MISMATCH`, com `fields.walletType`. Seleção ausente retorna `fields.walletId`; rede divergente retorna `fields.network`. As validações do colecionador usam chaves diretas em `fields` (`username`, `ensName`, `profileName` etc.), permitindo associar cada erro ao campo correspondente.
+
+## Disponibilidade e filtros
+
+`Nft.stock` é a soma de `stock` de todas as edições. Fixtures, atualização do catálogo, migração e confirmação de compra mantêm esse agregado. O filtro `available=true` e o selo do cartão usam essa disponibilidade: uma edição padrão zerada não esgota o NFT se a edição rara ainda possui unidades. Inclusão, alteração, cotação e compra validam o estoque da edição escolhida.
+
+Após queda de estoque, diminuir a quantidade no carrinho ajusta diretamente ao limite disponível quando a quantidade atual excede esse limite (por exemplo, de oito para duas unidades). Com estoque zero, o item exige remoção explícita; uma alteração de quantidade não remove silenciosamente o item.
+
+`minPrice` e `maxPrice` são limites inclusivos de `Nft.price`, enviados como strings decimais em ETH. Ambos fazem parte da URL do catálogo, junto com busca, filtros, ordenação e página. Alterar um filtro reinicia a página; refresh e histórico preservam os limites. A API aceita até 18 casas decimais e retorna 422 para um limite inválido.
+
+## Compatibilidade da base persistida
+
+A chave do navegador continua sendo `jungle-demo-v1`, agora com `schemaVersion: 2` dentro da base. Na inicialização, bases anteriores recebem os novos campos de conta/carteira e têm o estoque agregado dos NFTs recalculado. A migração preserva sessão, carrinhos, favoritos, hashes de senha, cotações, pedidos e referências idempotentes.
+
+Snapshots de `quote`, `wallet` e `collector` em pedidos legados não são enriquecidos com dados atuais nem valores inventados. Por isso, recibos antigos podem não ter os novos campos; a interface exibe esses detalhes somente quando presentes. Novos pedidos exigem o contrato completo de `Collector` e armazenam cópias dos dados validados.
+
+## Cotações e pedidos
 
 `JUNGLE10` applies a 10% discount; `EXPIRED` produces an expired-coupon error. Other codes are invalid. Network fees are included in the server quote and receipt.
 
@@ -74,7 +115,7 @@ Scenarios: `success`, `empty`, `slow`, `out-of-order`, `offline`, `server-error`
 | `{ scenario: 'slow', latency: 2500 }`                           | Delays requests to expose skeletons.                                                       |
 | `{ scenario: 'out-of-order' }`                                  | Short searches resolve after longer searches; abort signals prevent stale results.         |
 | `{ action: 'expire-session' }`                                  | Expires the current session while preserving cart and checkout context.                    |
-| `{ action: 'update-nft', nftId: '1', price: '0.99', stock: 2 }` | Persists catalog changes and emits an encoded Socket.IO event.                             |
+| `{ action: 'update-nft', nftId: '1', price: '0.99', stock: 2 }` | Atualiza preço/estoque da edição padrão, recalcula `Nft.stock` e emite o evento Socket.IO. |
 | `{ action: 'replay-event', old: false }`                        | Replays the last event with the same identity/version. `old: true` emits an older version. |
 | `{ action: 'disconnect' }` / `{ action: 'reconnect' }`          | Interrupts the socket transport and permits automatic reconnection.                        |
 | `{ action: 'settle-orders' }`                                   | Makes pending outcomes due immediately for deterministic tests.                            |

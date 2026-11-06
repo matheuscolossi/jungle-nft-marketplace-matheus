@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import {
   ArrowRight,
   Check,
@@ -8,13 +8,11 @@ import {
   Clock,
   LockKeyhole,
   Trash2,
-  Wallet as WalletIcon,
   XCircle,
 } from "lucide-react";
-import * as Dialog from "@radix-ui/react-dialog";
 import { api, err } from "../lib/api";
 import { useSession } from "../lib/session";
-import type { Cart, Order, Quote, Wallet } from "../types";
+import type { Cart, Order, Quote } from "../types";
 import { Button } from "../components/ui/button";
 import {
   Empty,
@@ -204,14 +202,22 @@ export function CartPage() {
                 apply.mutate(coupon);
               }}
             >
-              <label className="field">
-                Código promocional
+              <div className="field">
+                <label htmlFor="coupon-code">Código promocional</label>
                 <div className="coupon-input">
                   <input
+                    id="coupon-code"
                     aria-label="Código promocional"
+                    aria-invalid={Boolean(couponError)}
+                    aria-describedby={
+                      couponError ? "coupon-error coupon-hint" : "coupon-hint"
+                    }
                     placeholder="Digite seu cupom"
                     value={coupon}
-                    onChange={(e) => setCoupon(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      setCoupon(e.target.value.toUpperCase());
+                      setCouponError("");
+                    }}
                   />
                   <Button
                     size="sm"
@@ -221,11 +227,13 @@ export function CartPage() {
                     Aplicar
                   </Button>
                 </div>
-              </label>
-              <p className="field-hint">Experimente JUNGLE10</p>
+              </div>
+              <p id="coupon-hint" className="field-hint">
+                Experimente JUNGLE10
+              </p>
             </form>
             {couponError && (
-              <p role="alert" className="field-error">
+              <p id="coupon-error" role="alert" className="field-error">
                 {couponError}
               </p>
             )}
@@ -266,528 +274,6 @@ export function CartPage() {
         </div>
       )}
       <Related />
-    </>
-  );
-}
-type Attempt = {
-  key: string;
-  quoteId: string;
-  walletId: string;
-  network: string;
-  collector: { name: string; email: string };
-};
-type CheckoutDraft = {
-  name: string;
-  email: string;
-  walletId: string;
-  network: string;
-};
-function readCheckoutDraft(
-  userId: string | undefined,
-  fallback: { name: string; email: string },
-): CheckoutDraft {
-  try {
-    const value = JSON.parse(
-      sessionStorage.getItem(`kurio-checkout:${userId}`) ?? "null",
-    ) as Partial<CheckoutDraft> | null;
-    if (
-      value &&
-      typeof value.name === "string" &&
-      typeof value.email === "string" &&
-      typeof value.walletId === "string" &&
-      ["Ethereum", "Polygon"].includes(value.network ?? "")
-    )
-      return value as CheckoutDraft;
-  } catch {
-    /* A malformed draft must not prevent returning to checkout. */
-  }
-  return { ...fallback, walletId: "", network: "Ethereum" };
-}
-export function CheckoutPage() {
-  const { user } = useSession(),
-    cart = useCart(),
-    client = useQueryClient(),
-    navigate = useNavigate();
-  const [initialDraft] = useState(() =>
-    readCheckoutDraft(user?.id, {
-      name: user?.name ?? "",
-      email: user?.email ?? "",
-    }),
-  );
-  const [draftOwner, setDraftOwner] = useState(user?.id);
-  const [name, setName] = useState(initialDraft.name),
-    [email, setEmail] = useState(initialDraft.email),
-    [walletId, setWallet] = useState(initialDraft.walletId),
-    [network, setNetwork] = useState(initialDraft.network),
-    [connected, setConnected] = useState(false),
-    [refused, setRefused] = useState(false),
-    [review, setReview] = useState(false),
-    [message, setMessage] = useState(""),
-    [accepted, setAccepted] = useState(false);
-  const storageKey = `kurio-attempt:${user?.id}`,
-    busy = useRef(false),
-    reviewedFingerprint = useRef(""),
-    reviewButton = useRef<HTMLButtonElement>(null);
-  const wallets = useQuery({
-    queryKey: ["wallets", user?.id],
-    queryFn: async ({ signal }) =>
-      (await api.get<Wallet[]>("/wallets", { signal })).data,
-  });
-  const quote = useQuery({
-    queryKey: ["quote", user?.id, cart.data?.version],
-    queryFn: async () => (await api.post<Quote>("/quote", {})).data,
-    enabled: !!cart.data?.items.length,
-  });
-  useEffect(() => {
-    if (draftOwner === user?.id) return;
-    const draft = readCheckoutDraft(user?.id, {
-      name: user?.name ?? "",
-      email: user?.email ?? "",
-    });
-    setName(draft.name);
-    setEmail(draft.email);
-    setWallet(draft.walletId);
-    setNetwork(draft.network);
-    setDraftOwner(user?.id);
-    setConnected(false);
-    setAccepted(false);
-    setReview(false);
-  }, [draftOwner, user?.id, user?.name, user?.email]);
-  useEffect(() => {
-    if (!user?.id || draftOwner !== user.id) return;
-    try {
-      sessionStorage.setItem(
-        `kurio-checkout:${user.id}`,
-        JSON.stringify({ name, email, walletId, network }),
-      );
-    } catch {
-      /* The form remains usable if browser storage is unavailable. */
-    }
-  }, [draftOwner, user?.id, name, email, walletId, network]);
-  useEffect(() => {
-    const wallet = wallets.data?.find((w) => w.primary) ?? wallets.data?.[0];
-    if (
-      wallet &&
-      (!walletId || !wallets.data?.some((item) => item.id === walletId))
-    ) {
-      setWallet(wallet.id);
-      setNetwork(wallet.network);
-    }
-  }, [wallets.data, walletId]);
-  const attempt = useRef<Attempt | null>(null);
-  useEffect(() => {
-    let active = true;
-    attempt.current = null;
-    try {
-      const value = sessionStorage.getItem(storageKey);
-      if (value) {
-        const saved = JSON.parse(value) as Attempt;
-        if (
-          !saved.key ||
-          !saved.quoteId ||
-          !saved.walletId ||
-          !saved.network ||
-          typeof saved.collector?.name !== "string" ||
-          typeof saved.collector?.email !== "string"
-        )
-          throw new Error("Invalid purchase reference");
-        attempt.current = saved;
-        void api
-          .get<Order>("/orders", { params: { key: saved.key } })
-          .then(({ data }) => {
-            if (!active) return;
-            if (data.status !== "pending")
-              sessionStorage.removeItem(storageKey);
-            void navigate({ to: "/order/$id", params: { id: data.id } });
-          })
-          .catch(() => {});
-      }
-    } catch {
-      sessionStorage.removeItem(storageKey);
-    }
-    return () => {
-      active = false;
-    };
-  }, [storageKey, navigate]);
-  const persistDraft = () => {
-    if (user?.id)
-      sessionStorage.setItem(
-        `kurio-checkout:${user.id}`,
-        JSON.stringify({ name, email, walletId, network }),
-      );
-  };
-  const beginReview = useMutation({
-    mutationFn: async () => {
-      persistDraft();
-      await api.get("/profile");
-      const saved = attempt.current;
-      if (saved) {
-        try {
-          return (
-            await api.get<Order>("/orders", { params: { key: saved.key } })
-          ).data;
-        } catch (error) {
-          if (
-            (error as { response?: { status: number } }).response?.status !==
-            404
-          )
-            throw error;
-          // A confirmed 404 means the old attempt never created an order.
-          attempt.current = null;
-          sessionStorage.removeItem(storageKey);
-        }
-      }
-      return null;
-    },
-    onSuccess: (existing) => {
-      if (existing) {
-        if (existing.status !== "pending") {
-          attempt.current = null;
-          sessionStorage.removeItem(storageKey);
-        }
-        void navigate({ to: "/order/$id", params: { id: existing.id } });
-        return;
-      }
-      setMessage("");
-      reviewedFingerprint.current = quote.data?.fingerprint ?? "";
-      setReview(true);
-    },
-    onError: (e) => setMessage(err(e)),
-  });
-  const submit = useMutation({
-    mutationFn: async () => {
-      if (busy.current) return null;
-      busy.current = true;
-      try {
-        persistDraft();
-        await api.get("/profile");
-        if (!attempt.current) {
-          const latest = (await api.post<Quote>("/quote", {})).data;
-          if (
-            !quote.data ||
-            latest.fingerprint !== reviewedFingerprint.current
-          ) {
-            setReview(false);
-            setMessage(
-              "Os valores ou a disponibilidade mudaram. Revise o resumo atualizado e confirme novamente.",
-            );
-            await client.invalidateQueries({ queryKey: ["cart"] });
-            await client.invalidateQueries({ queryKey: ["quote"] });
-            return null;
-          }
-          attempt.current = {
-            key: crypto.randomUUID(),
-            quoteId: latest.id,
-            walletId,
-            network,
-            collector: { name, email },
-          };
-        }
-        sessionStorage.setItem(storageKey, JSON.stringify(attempt.current));
-        const { key, ...payload } = attempt.current;
-        try {
-          return (
-            await api.post<Order>("/orders", payload, {
-              headers: { "Idempotency-Key": key },
-            })
-          ).data;
-        } catch (e) {
-          try {
-            return (await api.get<Order>("/orders", { params: { key } })).data;
-          } catch {
-            throw e;
-          }
-        }
-      } finally {
-        busy.current = false;
-      }
-    },
-    onSuccess: (data) => {
-      if (data) {
-        if (data.status !== "pending") {
-          attempt.current = null;
-          sessionStorage.removeItem(storageKey);
-        }
-        void navigate({ to: "/order/$id", params: { id: data.id } });
-      }
-    },
-    onError: async (e) => {
-      setReview(false);
-      setMessage(err(e));
-      const response = (
-        e as { response?: { status: number; data?: { code?: string } } }
-      ).response;
-      if (
-        response?.status === 422 ||
-        ["QUOTE_CHANGED", "QUOTE_EXPIRED", "STOCK_CONFLICT"].includes(
-          response?.data?.code ?? "",
-        )
-      ) {
-        attempt.current = null;
-        sessionStorage.removeItem(storageKey);
-        await client.invalidateQueries({ queryKey: ["quote"] });
-        await client.invalidateQueries({ queryKey: ["cart"] });
-      }
-    },
-  });
-  if (cart.isPending || wallets.isPending) return <Skeleton detail />;
-  if (cart.isError || wallets.isError)
-    return (
-      <ErrorState
-        error={cart.error || wallets.error}
-        retry={() => {
-          void cart.refetch();
-          void wallets.refetch();
-        }}
-      />
-    );
-  if (!cart.data.items.length) return <Empty title="Seu carrinho está vazio" />;
-  return (
-    <>
-      <div className="breadcrumbs">
-        <Link to="/cart">Carrinho</Link> / <span>Pagamento</span>
-      </div>
-      <div className="page-title">
-        <h1>
-          Um passo para sua coleção<span className="accent">.</span>
-        </h1>
-      </div>
-      <div className="checkout-steps">
-        <span>01 · Seleção</span>
-        <span className="accent">02 · Pagamento</span>
-        <span>03 · Sua coleção</span>
-      </div>
-      <div className="purchase-layout">
-        <form
-          className="checkout-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            beginReview.mutate();
-          }}
-        >
-          <section className="form-section">
-            <h2>
-              <span>01</span> Dados do colecionador
-            </h2>
-            <div className="form-grid">
-              <label className="field">
-                Nome completo
-                <input
-                  required
-                  minLength={2}
-                  maxLength={80}
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </label>
-              <label className="field">
-                E-mail
-                <input
-                  required
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </label>
-            </div>
-          </section>
-          <section className="form-section">
-            <h2>
-              <span>02</span> Sua carteira
-            </h2>
-            {!wallets.data?.length ? (
-              <p>
-                Cadastre uma carteira para continuar.{" "}
-                <Link to="/wallets">Gerenciar carteiras →</Link>
-              </p>
-            ) : (
-              <>
-                <div className="form-grid">
-                  <label className="field">
-                    Carteira
-                    <select
-                      required
-                      aria-label="Carteira"
-                      value={walletId}
-                      onChange={(e) => {
-                        const selected = wallets.data.find(
-                          (w) => w.id === e.target.value,
-                        );
-                        setWallet(e.target.value);
-                        setConnected(false);
-                        if (selected) setNetwork(selected.network);
-                      }}
-                    >
-                      {wallets.data.map((w) => (
-                        <option key={w.id} value={w.id}>
-                          {w.name}
-                          {w.primary ? " · Principal" : ""}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="field">
-                    Rede
-                    <select
-                      aria-label="Rede"
-                      value={network}
-                      onChange={(e) => {
-                        setNetwork(e.target.value);
-                        setConnected(false);
-                      }}
-                    >
-                      <option>Ethereum</option>
-                      <option>Polygon</option>
-                    </select>
-                  </label>
-                </div>
-                <p className="wallet-preview">
-                  {wallets.data.find((w) => w.id === walletId)?.address}
-                </p>
-                <div className="wallet-actions">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setConnected(!connected);
-                      setRefused(false);
-                    }}
-                  >
-                    <WalletIcon size={16} />
-                    {connected
-                      ? "Desconectar carteira"
-                      : "Conectar carteira simulada"}
-                  </Button>
-                  {!connected && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        setRefused(true);
-                        setConnected(false);
-                      }}
-                    >
-                      Simular recusa de conexão
-                    </Button>
-                  )}
-                </div>
-                <p
-                  role="status"
-                  className={refused ? "field-error" : "success"}
-                >
-                  {connected
-                    ? "Carteira conectada na simulação."
-                    : refused
-                      ? "Conexão recusada. Você pode tentar novamente."
-                      : ""}
-                </p>
-              </>
-            )}
-          </section>
-          <section className="form-section">
-            <h2>
-              <span>03</span> Revise sua seleção
-            </h2>
-            <div className="checkout-items">
-              {quote.data?.items.map((item) => (
-                <div key={item.id}>
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    width="56"
-                    height="56"
-                  />
-                  <span>
-                    {item.name}
-                    <small>
-                      {item.quantity} × {eth(item.unitPrice)}
-                    </small>
-                  </span>
-                  <strong>{eth(item.total)}</strong>
-                </div>
-              ))}
-            </div>
-            <label className="checkbox-label">
-              <input
-                required
-                type="checkbox"
-                checked={accepted}
-                onChange={(e) => setAccepted(e.target.checked)}
-              />{" "}
-              Entendo que esta compra é uma simulação, sem pagamento real.
-            </label>
-          </section>
-          <p role="alert" className="field-error">
-            {message}
-          </p>
-          <Button
-            ref={reviewButton}
-            disabled={
-              !connected ||
-              !quote.data ||
-              !accepted ||
-              submit.isPending ||
-              beginReview.isPending
-            }
-          >
-            {beginReview.isPending ? "Validando sessão…" : "Revisar pedido"}{" "}
-            <ArrowRight size={16} />
-          </Button>
-        </form>
-        <aside className="summary panel">
-          <h2>Resumo do pedido</h2>
-          {quote.isPending ? (
-            <Skeleton />
-          ) : quote.isError ? (
-            <ErrorState
-              error={quote.error}
-              retry={() => void quote.refetch()}
-            />
-          ) : (
-            <Summary quote={quote.data} />
-          )}
-          <p className="fine-print">
-            <LockKeyhole size={15} /> A cotação será revalidada antes de
-            finalizar.
-          </p>
-          <Link to="/cart">Editar seleção →</Link>
-        </aside>
-      </div>
-      <Dialog.Root
-        open={review}
-        onOpenChange={(v) => !submit.isPending && setReview(v)}
-      >
-        <Dialog.Portal>
-          <Dialog.Overlay className="dialog-overlay" />
-          <Dialog.Content
-            className="dialog-content"
-            onCloseAutoFocus={(e) => {
-              e.preventDefault();
-              reviewButton.current?.focus();
-            }}
-          >
-            <Dialog.Title>Revise antes de confirmar</Dialog.Title>
-            <Dialog.Description>
-              Confira os dados e o total da sua compra simulada.
-            </Dialog.Description>
-            <p>
-              {name} · {email}
-            </p>
-            <p>Rede: {network}</p>
-            <Summary quote={quote.data} />
-            <Button disabled={submit.isPending} onClick={() => submit.mutate()}>
-              {submit.isPending ? "Enviando pedido…" : "Confirmar compra"}
-            </Button>
-            <Dialog.Close asChild>
-              <Button variant="ghost" disabled={submit.isPending}>
-                Voltar e editar
-              </Button>
-            </Dialog.Close>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
     </>
   );
 }
@@ -871,6 +357,50 @@ export function OrderPage() {
           <dl className="receipt-details">
             <dt>Colecionador</dt>
             <dd>{order.collector.name}</dd>
+            <dt>E-mail</dt>
+            <dd>{order.collector.email}</dd>
+            {order.collector.username && (
+              <>
+                <dt>Nome de usuário</dt>
+                <dd>{order.collector.username}</dd>
+              </>
+            )}
+            {order.collector.profileName && (
+              <>
+                <dt>Perfil</dt>
+                <dd>{order.collector.profileName}</dd>
+              </>
+            )}
+            {order.collector.ensName && (
+              <>
+                <dt>Nome ENS</dt>
+                <dd>{order.collector.ensName}</dd>
+              </>
+            )}
+            {order.collector.walletType && (
+              <>
+                <dt>Tipo da carteira</dt>
+                <dd>{order.collector.walletType}</dd>
+              </>
+            )}
+            {order.collector.referralCode && (
+              <>
+                <dt>Código de indicação</dt>
+                <dd>{order.collector.referralCode}</dd>
+              </>
+            )}
+            {order.collector.secondaryAddress && (
+              <>
+                <dt>Carteira secundária</dt>
+                <dd>{order.collector.secondaryAddress}</dd>
+              </>
+            )}
+            {order.collector.note && (
+              <>
+                <dt>Observação</dt>
+                <dd>{order.collector.note}</dd>
+              </>
+            )}
             <dt>Rede</dt>
             <dd>{order.network}</dd>
             <dt>Transação simulada</dt>
