@@ -1,6 +1,6 @@
 # KURIO · NFT Marketplace
 
-Implementação do [desafio de frontend da Jungle Gaming](https://github.com/junglegaming/frontend-challenge), com React, TypeScript e uma API simulada na camada de rede. A identidade visual parte do [Figma fornecido](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1): tons de marrom, acentos âmbar, títulos monoespaçados e obras em destaque.
+Implementação do [desafio de frontend da Jungle Gaming](https://github.com/junglegaming/frontend-challenge), com React, TypeScript e uma API simulada na camada de rede. A referência é o [Figma fornecido](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1); a [cópia disponibilizada para a revisão](https://www.figma.com/design/8OMEkRvebRuOLP9QeIJLf1/Frontend-Challenge--Copy-) permitiu obter os assets e os estilos originais em 6 de novembro de 2026.
 
 Todos os dados, endereços, pagamentos e referências de transação são fictícios. A aplicação funciona sem backend externo, extensão de carteira ou conexão com blockchain.
 
@@ -25,7 +25,7 @@ O worker do MSW e os assets são servidos localmente. A simulação está habili
 | Variável            | Padrão                  | Uso                                                                                                   |
 | ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | `VITE_ENABLE_MOCKS` | habilitado              | `false` desativa MSW. Requer disponibilizar uma API compatível em `/api` e Socket.IO na mesma origem. |
-| `E2E_BASE_URL`      | `http://127.0.0.1:4173` | Altera o alvo dos testes; a configuração ainda prepara o preview local em 4173.                       |
+| `E2E_BASE_URL`      | `http://127.0.0.1:4173` | Usa um preview existente, sem iniciar outro servidor. Sem a variável, prepara o build/preview local. |
 | `AUDIT_BASE_URL`    | `http://127.0.0.1:4173` | Origem do build otimizado para o Lighthouse.                                                          |
 | `AUDIT_DETAIL_PATH` | `/nft/1`                | Detalhe auditado.                                                                                     |
 | `AUDIT_RUNS`        | `3`                     | Medições por página e perfil. Preserve 3 para reproduzir a entrega.                                   |
@@ -44,16 +44,16 @@ Cupom válido: **`JUNGLE10`**, com 10% de desconto. Use `EXPIRED` para cupom exp
 
 ## Explorar os fluxos
 
-1. Busque uma obra e combine categoria, coleção e ordenação. A URL preserva a consulta e a página, inclusive no histórico do navegador.
+1. Busque uma obra e combine categoria, coleção, preço mínimo/máximo, disponibilidade e ordenação. “Em alta” ordena pelas curtidas das fixtures. A URL preserva a consulta e a página, inclusive no histórico do navegador.
 2. Abra um NFT, escolha edição e quantidade e adicione ao carrinho. A edição rara inclui exemplos esgotados.
 3. Atualize quantidades, aplique o cupom e siga para o pagamento. O carrinho do visitante é combinado com o da conta ao entrar.
-4. Confira seus dados, escolha carteira/rede, simule a conexão e revise a cotação antes de enviar.
+4. Confira nome, usuário, e-mail, perfil, tipo de carteira, indicação e ENS. Escolha carteira/rede, simule a conexão e revise a cotação antes de enviar. Carteira secundária e observação são opcionais.
 5. Acompanhe o pedido pendente até a resposta da simulação. O recibo usa os valores do pedido, mesmo após futuras alterações no catálogo.
 6. Em sua conta, altere perfil, avatar, senha e carteiras. Favoritos e pedidos pertencem ao usuário autenticado.
 
 ## Cenários e reset
 
-Abra **“Cenários de demonstração”** no rodapé. Escolha um cenário e use os controles para alterar o catálogo, expirar a sessão, repetir eventos ou interromper a conexão. O reset restaura catálogo, contas, sessões, favoritos, carrinhos, carteiras, cupons, cotações e pedidos.
+Abra **“Cenários de demonstração”** no rodapé ou no controle abaixo do conteúdo das páginas de perfil, carteiras e pedido. Escolha um cenário e use os controles para alterar o catálogo, expirar a sessão, repetir eventos ou interromper a conexão. O reset restaura catálogo, contas, sessões, favoritos, carrinhos, carteiras, cupons, cotações e pedidos.
 
 | Cenário            | Como observar                                                                                                    |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------- |
@@ -102,22 +102,24 @@ npm run audit
 - `npm test` executa Playwright em Chromium/Chrome com perfis desktop (1440 px) e mobile (390 px). A configuração inicia build/preview automaticamente. Para instalar o navegador, quando ausente: `npx playwright install chrome`.
 - `npm run test:update` atualiza as imagens de referência. Revise as diferenças antes de versioná-las.
 - O relatório HTML do Playwright fica em `reports/playwright/index.html`; traces e screenshots de falhas ficam em `reports/test-results/`.
-- Para auditar, mantenha `npm run preview -- --port 4173` ativo e execute `npm run audit` em outro terminal. São três medições para início/detalhe, em mobile/desktop. Os relatórios HTML/JSON e as medianas ficam em `reports/lighthouse/`.
+- Para auditar, mantenha `npm run preview -- --port 4173` ativo e execute `npm run audit` em outro terminal. São três medições para início/detalhe, em mobile/desktop. Os relatórios HTML/JSON e as medianas ficam em `reports/lighthouse/`. O comando falha se houver erro de execução ou uma mediana ficar abaixo das metas.
 
 Os testes verificam resultados da interface e chamadas pelos handlers reais da simulação. A regressão visual cobre início, detalhe, carrinho e pagamento com fixtures estáveis. A implementação, os limites do transporte, contratos REST, eventos e decisões de UX estão em [ARCHITECTURE.md](ARCHITECTURE.md). As evidências e condições de validação estão em [docs/VALIDATION.md](docs/VALIDATION.md).
 
 A suíte verifica larguras de **390, 768 e 1440 px**. O workflow `.github/workflows/ci.yml` executa tipos, lint, build e Playwright com Node 22 e guarda relatórios/traces por 14 dias. Usa Windows para corresponder ao ambiente e à fonte dos baselines locais; a reprodução visual em outro sistema operacional pode apresentar diferenças de rasterização.
 
-Validação final: **54/54 testes E2E**, oito capturas comparadas em uma execução adicional e 12 medições Lighthouse. As medianas de performance foram **94 mobile / 100 desktop** em início e detalhe; acessibilidade, boas práticas e SEO ficaram em **100**. Tipos, lint e build também passaram. Resultados e ambiente estão em [docs/VALIDATION.md](docs/VALIDATION.md).
+A validação usa o código de aplicação `b3027e7`, com os assets originais e a revisão visual. A suíte lista **90 entradas: 86 execuções e quatro skips intencionais** das varreduras de layout já exercitadas com dimensões explícitas. A execução completa concluiu **86 testes aprovados e quatro skips intencionais em 4,6 minutos**, sem atualização de snapshots; as oito referências visuais corresponderam. Os oito baselines foram regenerados e a execução visual concluiu 4/4 cenários. As 12 medições Lighthouse concluíram medianas de **90 em performance mobile e 99 desktop**, tanto no início quanto no detalhe; acessibilidade, boas práticas e SEO ficaram em **100**. A [execução no GitHub Actions](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42211615877) passou em tipos, lint, build e **86 testes, com quatro skips intencionais em 9,6 minutos**. O commit `98b3ebf` mantém o código de aplicação `b3027e7` e altera somente o README. Comandos, ambiente, métricas e limites estão em [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Assets e fidelidade visual
 
-As quatro ilustrações finais foram geradas com o Imagegen integrado e são servidas como WebP de 800 × 800 px: Emerald Ape, Sage Nomad, Ivory Baron e Golden Beat. O catálogo de 24 fixtures reutiliza essas quatro artes; as variações de dados exercitam filtros, paginação, preço e disponibilidade. Nenhum download externo de imagem ou fonte é necessário em execução.
+O catálogo usa as quatro artes originais obtidas do Figma, servidas em derivados WebP de 800 × 800 px. Os PNG originais ficam em `docs/figma-originals/`; SVGs e a fonte variável **Roboto Mono** são locais. A fonte WOFF2 tem 32.796 bytes, preload e `font-display: swap`, com a licença incluída. Não há download externo de imagem ou fonte em execução. Inventário, tamanhos, hashes e origem estão em [docs/ASSETS.md](docs/ASSETS.md).
 
-A composição, a paleta e a hierarquia foram guiadas pelo Figma. As imagens originais do arquivo não puderam ser extraídas pela visualização anônima. As artes e a tipografia de sistema são substituições documentadas, portanto a entrega não afirma reprodução pixel a pixel. Inventário, proveniência, resumos dos briefs e hashes estão em [docs/ASSETS.md](docs/ASSETS.md).
+A revisão aplica a composição de início, detalhe, autenticação, conta, carteiras e pagamento: hero, promoções, diário, modal desktop e autenticação mobile independente. Os 24 NFTs continuam sendo dados da API simulada; preços e contagens não são números fixos do Figma. A migração para schema 3 atualiza as imagens do catálogo sem alterar recibos ou cotações anteriores. As artes substitutas da versão inicial permanecem somente para exibir esses snapshots legados.
+
+Algumas interações exigem adaptações: busca visível no catálogo, quatro categorias reais com filtro de coleção e indicação da rede Ethereum das fixtures. Não há facetas que aparentem filtrar redes inexistentes. Ações editoriais, sociais e de suporte fora do escopo indicam indisponibilidade, sem simular sucesso externo. A revisão e os baselines não constituem certificação de igualdade pixel a pixel; diferenças conhecidas e pendências estão em [docs/REQUIREMENTS-AUDIT.md](docs/REQUIREMENTS-AUDIT.md).
 
 ## Publicação
 
 `npm run build` produz `dist/`. O host deve servir `index.html` para rotas não correspondentes a arquivos, preservando `/mockServiceWorker.js` e os assets; isso permite abrir ou atualizar `/nft/1`, `/cart`, `/checkout` e páginas da conta diretamente. Os mocks também devem permanecer habilitados no build publicado.
 
-O código está em [matheuscolossi/jungle-nft-marketplace-matheus](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus). 
+O código está em [matheuscolossi/jungle-nft-marketplace-matheus](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus). A Vercel está conectada, mas a publicação pública para os avaliadores permanece pendente. O projeto inclui `vercel.json` com fallback das rotas e configuração do worker; use `npm run build` e a pasta `dist`. Após publicar, confira acesso anônimo, refresh das rotas internas e o fluxo de compra no endereço final. Não há URL pública de entrega confirmada nesta revisão.

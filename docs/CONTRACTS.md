@@ -67,11 +67,15 @@ Após queda de estoque, diminuir a quantidade no carrinho ajusta diretamente ao 
 
 `minPrice` e `maxPrice` são limites inclusivos de `Nft.price`, enviados como strings decimais em ETH. Ambos fazem parte da URL do catálogo, junto com busca, filtros, ordenação e página. Alterar um filtro reinicia a página; refresh e histórico preservam os limites. A API aceita até 18 casas decimais e retorna 422 para um limite inválido.
 
+Ordenações usadas pela interface: `featured`, `newest`, `popular`, `price-asc`, `price-desc` e `name`. `popular` ordena por `Nft.likes` decrescente e é usado pela aba “Em alta”; `newest` ordena pelo identificador decrescente das fixtures. Os filtros expõem as quatro categorias e as coleções reais do cenário. Os NFTs atuais representam Ethereum; não há parâmetro de filtro de rede nem contagens inventadas de outras redes. Isso é distinto do contrato de carteiras, que aceita Ethereum e Polygon.
+
 ## Compatibilidade da base persistida
 
-A chave do navegador continua sendo `jungle-demo-v1`, agora com `schemaVersion: 2` dentro da base. Na inicialização, bases anteriores recebem os novos campos de conta/carteira e têm o estoque agregado dos NFTs recalculado. A migração preserva sessão, carrinhos, favoritos, hashes de senha, cotações, pedidos e referências idempotentes.
+A chave do navegador continua sendo `jungle-demo-v1`, agora com `schemaVersion: 3` dentro da base. Bases anteriores à versão 2 recebem os novos campos de conta/carteira e têm o estoque agregado dos NFTs recalculado. A passagem para a versão 3 atualiza somente `image` e `images` do catálogo com os caminhos locais das artes originais do Figma. Preserva preços, estoque, versões, sessão, carrinhos, favoritos, hashes de senha, cotações, pedidos e referências idempotentes.
 
 Snapshots de `quote`, `wallet` e `collector` em pedidos legados não são enriquecidos com dados atuais nem valores inventados. Por isso, recibos antigos podem não ter os novos campos; a interface exibe esses detalhes somente quando presentes. Novos pedidos exigem o contrato completo de `Collector` e armazenam cópias dos dados validados.
+
+Os snapshots de cotação e pedido também mantêm a imagem registrada na compra; a troca das artes atuais não altera seu conteúdo. Os antigos assets continuam servidos para permitir a exibição de recibos legados. A origem e os derivados otimizados atuais estão em [ASSETS.md](ASSETS.md).
 
 ## Cotações e pedidos
 
@@ -107,6 +111,8 @@ Mock limitations: the binding supports the default namespace and text events. Th
 ## Deterministic demonstration controls
 
 `GET /demo` returns `{ scenario, latency, connected, seed }`. `DELETE /demo` resets all accounts, hashes, sessions, carts, NFTs, quotes, orders, idempotency attempts and event state. `PATCH /demo` accepts a scenario and/or action; this endpoint bypasses simulated latency/errors so recovery is always possible.
+
+The UI exposes the same controls through “Cenários de demonstração” in the footer, or below the main content on profile, wallets and order pages where the footer is hidden.
 
 Scenarios: `success`, `empty`, `slow`, `out-of-order`, `offline`, `server-error`, `unauthorized`, `favorite-error`, `validation-error`, `price-change`, `sold-out`, `order-timeout`, `payment-refused`, `pending`.
 

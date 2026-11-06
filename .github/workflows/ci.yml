@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    # Baselines are produced on Windows, using the locally available Courier New.
+    # Keep the browser platform aligned with the versioned visual baselines.
     runs-on: windows-latest
     timeout-minutes: 25
     env:
