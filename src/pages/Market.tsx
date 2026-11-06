@@ -6,7 +6,7 @@ import {
   useParams,
   useSearch,
 } from "@tanstack/react-router";
-import { ArrowDown, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { api, err } from "../lib/api";
 import type { Nft, PageResult } from "../types";
@@ -32,16 +32,389 @@ export type CatalogSearch = {
   minPrice: string;
   maxPrice: string;
 };
-export function MarketPage() {
-  const search = useSearch({ from: "/" }),
-    navigate = useNavigate(),
-    [filterOpen, setFilterOpen] = useState(false);
-  const update = (patch: Partial<CatalogSearch>) =>
-    void navigate({
-      to: "/",
-      search: { ...search, ...patch, page: patch.page ?? 1 },
-      resetScroll: false,
-    });
+
+const initialSearch: CatalogSearch = {
+  q: "",
+  category: "",
+  collection: "",
+  sort: "featured",
+  page: 1,
+  available: false,
+  minPrice: "",
+  maxPrice: "",
+};
+const categories = [
+  { value: "Art", label: "Arte digital" },
+  { value: "Photography", label: "Fotografia" },
+  { value: "Gaming", label: "Jogos" },
+  { value: "Collectibles", label: "Colecionáveis" },
+];
+const collections = [
+  "Cosmic Visions",
+  "Wild Souls",
+  "Digital Expressions",
+  "Future Worlds",
+];
+const articles = [
+  {
+    title: "Como funciona a propriedade de NFTs",
+    date: "12 de setembro",
+    minutes: 6,
+    image: "neon-vessel",
+    description: "Aprenda a colecionar, negociar e verificar ativos digitais.",
+  },
+  {
+    title: "10 artistas digitais para acompanhar",
+    date: "13 de setembro",
+    minutes: 2,
+    image: "hero-ape",
+    description: "Conheça criadores que moldam a cultura digital.",
+  },
+  {
+    title: "Raridade, atributos e procedência",
+    date: "15 de setembro",
+    minutes: 3,
+    image: "sage-nomad",
+    description:
+      "Entenda raridade, procedência, direitos autorais e utilidade.",
+  },
+  {
+    title: "Como proteger sua carteira",
+    date: "15 de setembro",
+    minutes: 2,
+    image: "golden-beat",
+    description: "Proteja sua carteira, seus ativos e sua identidade.",
+  },
+];
+
+type UpdateCatalog = (patch: Partial<CatalogSearch>) => void;
+
+function MarketFilters({
+  search,
+  update,
+  nfts,
+  eager = false,
+}: {
+  search: CatalogSearch;
+  update: UpdateCatalog;
+  nfts?: Nft[];
+  eager?: boolean;
+}) {
+  return (
+    <div className="market-filter-stack">
+      <div className="filter-content">
+        <h2>Coleções</h2>
+        <label className="market-category-field">
+          <span className="sr-only">Categoria</span>
+          <select
+            aria-label="Categoria"
+            size={5}
+            value={search.category}
+            onChange={(event) => update({ category: event.target.value })}
+          >
+            <option value="">Todas as categorias</option>
+            {categories.map((category) => (
+              <option value={category.value} key={category.value}>
+                {category.label}
+                {nfts
+                  ? " (" +
+                    nfts.filter((nft) => nft.category === category.value)
+                      .length +
+                    ")"
+                  : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field market-collection-field">
+          Coleção
+          <select
+            aria-label="Coleção"
+            value={search.collection}
+            onChange={(event) => update({ collection: event.target.value })}
+          >
+            <option value="">Todas as coleções</option>
+            {collections.map((collection) => (
+              <option key={collection}>{collection}</option>
+            ))}
+          </select>
+        </label>
+        <div className="market-price-fields">
+          <h3>Faixa de preço</h3>
+          <div className="market-price-inputs">
+            <label className="field">
+              Mínimo
+              <input
+                aria-label="Preço mínimo em ETH"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00 ETH"
+                value={search.minPrice}
+                onChange={(event) => update({ minPrice: event.target.value })}
+              />
+            </label>
+            <label className="field">
+              Máximo
+              <input
+                aria-label="Preço máximo em ETH"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Sem limite"
+                value={search.maxPrice}
+                onChange={(event) => update({ maxPrice: event.target.value })}
+              />
+            </label>
+          </div>
+        </div>
+        <section className="market-network" aria-label="Rede disponível">
+          <h3>Rede</h3>
+          <p>
+            <span>Ethereum</span>
+            <span>{nfts ? "(" + nfts.length + ")" : "—"}</span>
+          </p>
+        </section>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={search.available}
+            onChange={(event) => update({ available: event.target.checked })}
+          />
+          Apenas disponíveis
+        </label>
+        <Button variant="outline" onClick={() => update(initialSearch)}>
+          Limpar filtros
+        </Button>
+      </div>
+      <Link className="filter-promo" to="/nft/$id" params={{ id: "2" }}>
+        <span>NFT EM DESTAQUE</span>
+        <h3>OFERTA LIMITADA</h3>
+        <img
+          src="/assets/figma/sage-nomad.webp"
+          width="310"
+          height="368"
+          alt="Sage Nomad, obra em destaque"
+          loading={eager ? "eager" : "lazy"}
+        />
+      </Link>
+    </div>
+  );
+}
+
+function MarketHero() {
+  return (
+    <section className="hero" aria-label="Destaque da coleção">
+      <img
+        className="market-hero-background"
+        src="/assets/figma/rectangle3.svg"
+        width="1200"
+        height="450"
+        alt=""
+      />
+      <div className="hero-copy">
+        <p className="eyebrow">Bem-vindo à Kurio</p>
+        <h1>
+          SEJA DONO DO FUTURO
+          <br />
+          DA ARTE DIGITAL
+        </h1>
+        <p>
+          Descubra NFTs selecionados de criadores emergentes e consagrados.
+          Colecione arte digital rara, apoie artistas e tenha uma parte da
+          cultura da internet.
+        </p>
+        <a className="btn btn-primary" href="#mercado">
+          EXPLORAR
+        </a>
+        <img
+          className="market-hero-dots"
+          src="/assets/figma/group4.svg"
+          width="40"
+          height="8"
+          alt=""
+        />
+      </div>
+      <Link
+        className="hero-art"
+        to="/nft/$id"
+        params={{ id: "1" }}
+        aria-label="Conhecer Emerald Ape #042"
+      >
+        <img
+          src="/assets/figma/hero-ape.webp"
+          width="450"
+          height="450"
+          fetchPriority="high"
+          alt="Emerald Ape, macaco com óculos verdes e jaqueta esportiva"
+        />
+      </Link>
+    </section>
+  );
+}
+
+function MarketPromos({ backdrop }: { backdrop: boolean }) {
+  return (
+    <section className="market-promos" aria-label="Coleções em destaque">
+      <article className="market-promo">
+        <img
+          className="market-promo-art"
+          src="/assets/figma/hero-ape.webp"
+          width="292"
+          height="250"
+          alt="Emerald Ape"
+          loading={backdrop ? "eager" : "lazy"}
+        />
+        <div className="market-promo-copy">
+          <h2>
+            Lançamentos gênesis
+            <br />
+            de edição limitada
+          </h2>
+          <p>
+            Colecione edições escassas diretamente dos criadores antes da
+            revelação pública.
+          </p>
+          <Link
+            className="btn btn-primary"
+            to="/"
+            hash="mercado"
+            search={{ sort: "newest" }}
+          >
+            Explorar <ArrowRight size={18} />
+          </Link>
+        </div>
+        <img
+          className="market-promo-mask"
+          src="/assets/figma/mask-group.svg"
+          width="586"
+          height="250"
+          alt=""
+        />
+      </article>
+      <article className="market-promo">
+        <img
+          className="market-promo-art"
+          src="/assets/figma/neon-vessel.webp"
+          width="287"
+          height="250"
+          alt="Neon Vessel"
+          loading={backdrop ? "eager" : "lazy"}
+        />
+        <div className="market-promo-copy">
+          <h2>
+            Arte digital selecionada
+            <br />e muito mais
+          </h2>
+          <p>
+            Explore novos artistas, coleções verificadas e obras digitais que
+            definem a cultura.
+          </p>
+          <Link
+            className="btn btn-primary"
+            to="/"
+            hash="mercado"
+            search={{ category: "Art" }}
+          >
+            Explorar <ArrowRight size={18} />
+          </Link>
+        </div>
+        <img
+          className="market-promo-mask"
+          src="/assets/figma/mask-group.svg"
+          width="586"
+          height="250"
+          alt=""
+        />
+      </article>
+    </section>
+  );
+}
+
+function MarketJournal({ backdrop }: { backdrop: boolean }) {
+  const [article, setArticle] = useState<(typeof articles)[number] | null>(
+    null,
+  );
+  return (
+    <section
+      className="market-journal"
+      id="diario"
+      aria-labelledby="market-journal-title"
+    >
+      <header>
+        <h2 id="market-journal-title">Diário da Cunhagem</h2>
+        <p>
+          Histórias, guias e insights para colecionadores sobre o universo da
+          propriedade digital.
+        </p>
+      </header>
+      <div className="market-journal-grid">
+        {articles.map((entry) => (
+          <article className="market-journal-card" key={entry.title}>
+            <img
+              src={"/assets/figma/" + entry.image + ".webp"}
+              width="268"
+              height="195"
+              alt=""
+              loading={backdrop ? "eager" : "lazy"}
+            />
+            <div>
+              <p className="market-journal-date">
+                {entry.date} | Leitura de {entry.minutes} min
+              </p>
+              <h3>{entry.title}</h3>
+              <p>{entry.description}</p>
+              <button
+                type="button"
+                onClick={() => setArticle(entry)}
+                aria-label={"Ler mais: " + entry.title}
+              >
+                Ler mais <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+      {!backdrop && (
+        <Dialog.Root
+          open={Boolean(article)}
+          onOpenChange={(open) => !open && setArticle(null)}
+        >
+          <Dialog.Portal>
+            <Dialog.Overlay className="dialog-overlay" />
+            <Dialog.Content className="dialog-content market-article-preview">
+              <p className="eyebrow">PRÉVIA DO DIÁRIO</p>
+              <Dialog.Title>{article?.title}</Dialog.Title>
+              <Dialog.Description>{article?.description}</Dialog.Description>
+              <p>Descubra as obras e os criadores da seleção Kurio.</p>
+              <a
+                className="btn btn-primary"
+                href="#mercado"
+                onClick={() => setArticle(null)}
+              >
+                Explorar o mercado
+              </a>
+              <Dialog.Close asChild>
+                <Button variant="ghost">Fechar</Button>
+              </Dialog.Close>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      )}
+    </section>
+  );
+}
+
+function MarketContent({
+  search,
+  update,
+  backdrop = false,
+}: {
+  search: CatalogSearch;
+  update: UpdateCatalog;
+  backdrop?: boolean;
+}) {
+  const [filterOpen, setFilterOpen] = useState(false);
   const result = useQuery({
     queryKey: ["nfts", search],
     queryFn: async ({ signal }) =>
@@ -52,206 +425,122 @@ export function MarketPage() {
         })
       ).data,
   });
-  const filters = (
-    <div className="filter-content">
-      <h2>Coleções</h2>
-      <label className="field">
-        Categoria
-        <select
-          aria-label="Categoria"
-          value={search.category}
-          onChange={(e) => update({ category: e.target.value })}
-        >
-          <option value="">Todas as categorias</option>
-          <option value="Art">Arte digital</option>
-          <option value="Photography">Fotografia</option>
-          <option value="Gaming">Jogos</option>
-          <option value="Collectibles">Colecionáveis</option>
-        </select>
-      </label>
-      <label className="field">
-        Coleção
-        <select
-          aria-label="Coleção"
-          value={search.collection}
-          onChange={(e) => update({ collection: e.target.value })}
-        >
-          <option value="">Todas as coleções</option>
-          {[
-            "Cosmic Visions",
-            "Wild Souls",
-            "Digital Expressions",
-            "Future Worlds",
-          ].map((c) => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
-      </label>
-      <div className="filter-line" />
-      <label className="field">
-        Faixa de preço
-        <input
-          aria-label="Preço mínimo em ETH"
-          type="number"
-          min="0"
-          step="0.1"
-          placeholder="Mínimo em ETH"
-          value={search.minPrice}
-          onChange={(e) => update({ minPrice: e.target.value })}
-        />
-        <input
-          aria-label="Preço máximo em ETH"
-          type="number"
-          min="0"
-          step="0.1"
-          placeholder="Máximo em ETH"
-          value={search.maxPrice}
-          onChange={(e) => update({ maxPrice: e.target.value })}
-        />
-      </label>
-      <label className="checkbox-label">
-        <input
-          type="checkbox"
-          checked={search.available}
-          onChange={(e) => update({ available: e.target.checked })}
-        />{" "}
-        Apenas disponíveis
-      </label>
-      <Button
-        variant="outline"
-        onClick={() =>
-          update({
-            q: "",
-            category: "",
-            collection: "",
-            sort: "featured",
-            available: false,
-            minPrice: "",
-            maxPrice: "",
-          })
-        }
-      >
-        Limpar filtros
-      </Button>
-      <div className="filter-promo">
-        <span>NFT EM DESTAQUE</span>
-        <h3>
-          Uma edição.
-          <br />
-          Infinitas possibilidades.
-        </h3>
-        <img
-          src="/assets/sage-nomad.webp"
-          width="250"
-          height="250"
-          alt="Obra da coleção em destaque"
-        />
-        <Link to="/nft/$id" params={{ id: "2" }}>
-          Conheça a obra <ArrowRight size={15} />
-        </Link>
-      </div>
-    </div>
-  );
+  const facets = useQuery({
+    queryKey: ["nfts", "filter-options"],
+    queryFn: async ({ signal }) =>
+      (
+        await api.get<PageResult<Nft>>("/nfts", {
+          params: { pageSize: 24 },
+          signal,
+        })
+      ).data.items,
+  });
+  const activeTab =
+    search.sort === "newest"
+      ? "newest"
+      : search.sort === "popular"
+        ? "popular"
+        : "featured";
   return (
-    <>
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Bem-vindo à Kurio</p>
-          <h1>
-            SEJA DONO DO FUTURO
-            <br />
-            DA ARTE DIGITAL
-          </h1>
-          <p>
-            Descubra NFTs selecionados de criadores emergentes e consagrados.
-            Colecione arte digital rara, apoie artistas e tenha uma parte da
-            cultura da internet.
-          </p>
-          <a className="btn btn-primary" href="#mercado">
-            EXPLORAR O MERCADO <ArrowRight size={16} />
-          </a>
-          <div className="hero-caption">
-            <span className="small-dot" /> Curadoria independente. Conexões
-            extraordinárias.
-          </div>
-        </div>
-        <Link className="hero-art" to="/nft/$id" params={{ id: "1" }}>
-          <img
-            src="/assets/emerald-ape.webp"
-            width="600"
-            height="600"
-            fetchPriority="high"
-            alt="Emerald Ape: macaco com óculos verdes e jaqueta esportiva"
+    <div
+      className={"market-page" + (backdrop ? " market-backdrop" : "")}
+      inert={backdrop || undefined}
+      aria-hidden={backdrop || undefined}
+    >
+      <MarketHero />
+      <section
+        id="mercado"
+        className="catalog-layout"
+        aria-label="Mercado de NFTs"
+      >
+        <aside className="desktop-filters">
+          <MarketFilters
+            search={search}
+            update={update}
+            nfts={facets.data}
+            eager={backdrop}
           />
-          <span>
-            EMERALD APE #042 <ArrowRight size={16} />
-          </span>
-        </Link>
-      </section>
-      <section id="mercado" className="catalog-layout">
-        <aside className="desktop-filters">{filters}</aside>
+        </aside>
         <div className="catalog-main">
-          <div className="catalog-title">
-            <div>
-              <p className="eyebrow">ENCONTRE SUA PRÓXIMA CONEXÃO</p>
-              <h2>
-                Explore o mercado<span className="accent">.</span>
-              </h2>
-            </div>
-            <span className="muted">{result.data?.total ?? "—"} obras</span>
-          </div>
           <div className="catalog-toolbar">
+            <div
+              className="market-tabs"
+              role="group"
+              aria-label="Seleção de obras"
+            >
+              {[
+                ["featured", "Todos os NFTs"],
+                ["newest", "Novos lançamentos"],
+                ["popular", "Em alta"],
+              ].map(([sort, label]) => (
+                <button
+                  key={sort}
+                  type="button"
+                  aria-pressed={activeTab === sort}
+                  onClick={() => update({ sort })}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <label className="sort-label">
+              Ordenar por:
+              <select
+                aria-label="Ordenar por"
+                value={search.sort}
+                onChange={(event) => update({ sort: event.target.value })}
+              >
+                <option value="featured">Destaques</option>
+                <option value="newest">Mais recentes</option>
+                <option value="popular">Em alta</option>
+                <option value="price-asc">Menor preço</option>
+                <option value="price-desc">Maior preço</option>
+                <option value="name">Nome A–Z</option>
+              </select>
+            </label>
             <label className="search-box">
               <Search size={17} />
               <input
                 aria-label="Buscar NFTs"
                 placeholder="Busque uma obra, coleção ou artista"
                 value={search.q}
-                onChange={(e) => update({ q: e.target.value })}
+                onChange={(event) => update({ q: event.target.value })}
               />
             </label>
-            <Dialog.Root open={filterOpen} onOpenChange={setFilterOpen}>
-              <Dialog.Trigger asChild>
-                <Button className="mobile-filter" variant="outline">
-                  <SlidersHorizontal size={16} /> Filtros
-                </Button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="dialog-overlay" />
-                <Dialog.Content className="dialog-content filter-dialog">
-                  <Dialog.Title>Filtrar obras</Dialog.Title>
-                  <Dialog.Description>
-                    Combine filtros para encontrar sua próxima obra.
-                  </Dialog.Description>
-                  {filters}
-                  <Dialog.Close asChild>
-                    <Button>Ver resultados</Button>
-                  </Dialog.Close>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-            <label className="sort-label">
-              Ordenar por
-              <select
-                aria-label="Ordenar por"
-                value={search.sort}
-                onChange={(e) => update({ sort: e.target.value })}
-              >
-                <option value="featured">Destaques</option>
-                <option value="newest">Mais recentes</option>
-                <option value="price-asc">Menor preço</option>
-                <option value="price-desc">Maior preço</option>
-                <option value="name">Nome A–Z</option>
-              </select>
-            </label>
+            {!backdrop && (
+              <Dialog.Root open={filterOpen} onOpenChange={setFilterOpen}>
+                <Dialog.Trigger asChild>
+                  <Button className="mobile-filter" variant="outline">
+                    <SlidersHorizontal size={16} /> Filtros
+                  </Button>
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="dialog-overlay" />
+                  <Dialog.Content className="dialog-content filter-dialog">
+                    <Dialog.Title>Filtrar obras</Dialog.Title>
+                    <Dialog.Description>
+                      Combine filtros para encontrar sua próxima obra.
+                    </Dialog.Description>
+                    <MarketFilters
+                      search={search}
+                      update={update}
+                      nfts={facets.data}
+                    />
+                    <Dialog.Close asChild>
+                      <Button>Ver resultados</Button>
+                    </Dialog.Close>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
+            )}
           </div>
           <div aria-live="polite" className="query-status">
             {result.isFetching && !result.isPending ? "Atualizando obras…" : ""}
           </div>
           {result.isPending ? (
             <div className="nft-grid">
-              {Array.from({ length: 9 }, (_, i) => (
-                <Skeleton key={i} />
+              {Array.from({ length: 9 }, (_, index) => (
+                <Skeleton key={index} />
               ))}
             </div>
           ) : result.isError ? (
@@ -264,8 +553,12 @@ export function MarketPage() {
           ) : (
             <>
               <div className="nft-grid">
-                {result.data.items.map((nft, i) => (
-                  <NftCard key={nft.id} nft={nft} priority={i < 3} />
+                {result.data.items.map((nft, index) => (
+                  <NftCard
+                    key={nft.id}
+                    nft={nft}
+                    priority={backdrop || index < 3}
+                  />
                 ))}
               </div>
               <nav className="pagination" aria-label="Paginação">
@@ -276,15 +569,17 @@ export function MarketPage() {
                 >
                   Anterior
                 </Button>
-                {Array.from({ length: result.data.pages }, (_, i) => (
+                {Array.from({ length: result.data.pages }, (_, index) => (
                   <Button
-                    key={i}
-                    variant={search.page === i + 1 ? "default" : "ghost"}
-                    aria-label={`Página ${i + 1}`}
-                    aria-current={search.page === i + 1 ? "page" : undefined}
-                    onClick={() => update({ page: i + 1 })}
+                    key={index}
+                    variant={search.page === index + 1 ? "default" : "ghost"}
+                    aria-label={"Página " + (index + 1)}
+                    aria-current={
+                      search.page === index + 1 ? "page" : undefined
+                    }
+                    onClick={() => update({ page: index + 1 })}
                   >
-                    {i + 1}
+                    {index + 1}
                   </Button>
                 ))}
                 <Button
@@ -300,24 +595,33 @@ export function MarketPage() {
           )}
         </div>
       </section>
-      <section className="editorial">
-        <p className="eyebrow">CURADORIA QUE CONECTA</p>
-        <h2>
-          Arte digital selecionada
-          <br />
-          por quem vive o próximo.
-        </h2>
-        <p>
-          Novas perspectivas, artistas independentes e obras que vão além da
-          tela.
-        </p>
-        <a href="#mercado" className="btn btn-outline">
-          Descobrir coleções <ArrowDown size={16} />
-        </a>
-      </section>
-    </>
+      <MarketPromos backdrop={backdrop} />
+      <MarketJournal backdrop={backdrop} />
+    </div>
   );
 }
+
+export function MarketPage() {
+  const search = useSearch({ from: "/" });
+  const navigate = useNavigate();
+  return (
+    <MarketContent
+      search={search}
+      update={(patch) =>
+        void navigate({
+          to: "/",
+          search: { ...search, ...patch, page: patch.page ?? 1 },
+          resetScroll: false,
+        })
+      }
+    />
+  );
+}
+
+export function MarketBackdrop() {
+  return <MarketContent search={initialSearch} update={() => {}} backdrop />;
+}
+
 export function DetailPage() {
   const { id } = useParams({ from: "/nft/$id" }),
     client = useQueryClient(),
@@ -360,7 +664,7 @@ export function DetailPage() {
   const nft = result.data,
     edition = nft.editions.find((e) => e.id === editionId) ?? nft.editions[0];
   return (
-    <>
+    <div className="nft-detail-page">
       <div className="breadcrumbs">
         <Link to="/">Início</Link> / <Link to="/">Mercado</Link> /{" "}
         <span>{nft.name}</span>
@@ -385,14 +689,16 @@ export function DetailPage() {
               </button>
             ))}
           </div>
-          <img
-            className="detail-art"
-            src={nft.images[image] || nft.image}
-            width="600"
-            height="600"
-            alt={nft.name}
-            fetchPriority="high"
-          />
+          <div className="detail-art-frame">
+            <img
+              className="detail-art"
+              src={nft.images[image] || nft.image}
+              width="600"
+              height="600"
+              alt={nft.name}
+              fetchPriority="high"
+            />
+          </div>
         </div>
         <div className="detail-info">
           <p className="eyebrow">
@@ -481,6 +787,6 @@ export function DetailPage() {
         </p>
       </section>
       <Related />
-    </>
+    </div>
   );
 }

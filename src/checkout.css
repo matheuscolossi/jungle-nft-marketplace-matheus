@@ -1,0 +1,295 @@
+.checkout-page .breadcrumbs {
+  margin: 32px 0;
+  font-weight: 700;
+}
+.checkout-page .checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 405px);
+  gap: 32px;
+  align-items: start;
+  margin: 0;
+}
+.checkout-page .checkout-form {
+  min-width: 0;
+}
+.checkout-page .checkout-form > h2,
+.checkout-page .checkout-summary > h2 {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  font-size: 17px;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+.checkout-page .collector-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.checkout-page .field {
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 20px;
+}
+.checkout-page .field label > span {
+  color: #f0805f;
+}
+.checkout-page .field input,
+.checkout-page .field select {
+  height: 40px;
+  padding: 9px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  background: transparent;
+}
+.checkout-page .field input[readonly] {
+  color: var(--muted);
+  font-size: 12px;
+}
+.checkout-page .field-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 16px;
+}
+.checkout-page .field-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+.checkout-page .checkout-note {
+  width: calc(50% - 12px);
+  margin-top: 24px;
+}
+.checkout-page .checkout-note textarea {
+  min-height: 150px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 22px;
+}
+.checkout-acceptance {
+  margin-top: 24px;
+  align-items: flex-start;
+  font-size: 12px;
+  line-height: 20px;
+}
+.checkout-acceptance > input {
+  margin-top: 2px;
+}
+.checkout-page .checkout-feedback {
+  margin-top: 12px;
+}
+.checkout-page .checkout-feedback:empty {
+  display: none;
+}
+.checkout-page .checkout-summary {
+  position: static;
+  padding: 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+.checkout-item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 20px;
+}
+.checkout-page .checkout-items {
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.checkout-page .checkout-items > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px 0 0;
+  min-height: 72px;
+  background: #241612;
+  font-size: 14px;
+  line-height: 20px;
+}
+.checkout-page .checkout-items img {
+  width: 72px;
+  height: 72px;
+  border-radius: 0;
+}
+.checkout-page .checkout-items span {
+  min-width: 0;
+  font-weight: 700;
+}
+.checkout-page .checkout-items small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 400;
+}
+.checkout-page .checkout-items strong {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+  text-align: right;
+}
+.checkout-page .totals {
+  margin: 16px 0 24px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.checkout-page .totals > div {
+  margin-bottom: 12px;
+}
+.checkout-page .totals > .grand-total {
+  margin-top: 14px;
+  padding-top: 14px;
+  font-size: 16px;
+}
+.checkout-wallet-section {
+  margin-top: 24px;
+}
+.checkout-wallet-section > h3 {
+  text-align: center;
+  font-size: 17px;
+  line-height: 24px;
+  margin: 0 0 16px;
+}
+.checkout-wallet-section .wallet-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.checkout-wallet-section .wallet-actions .btn {
+  width: 100%;
+  min-width: 0;
+  font-size: 13px;
+}
+.checkout-wallet-section > p {
+  margin: 10px 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+.checkout-wallet-section > p:empty {
+  display: none;
+}
+.checkout-wallet-section .continue-link {
+  margin: 12px 0 20px;
+  font-size: 12px;
+}
+.checkout-page .checkout-review-button {
+  width: 100%;
+  min-height: 45px;
+  margin: 16px 0 0;
+  font-size: 15px;
+  line-height: 20px;
+}
+.checkout-page .checkout-edit-selection {
+  display: block;
+  font-size: 13px;
+  text-align: center;
+}
+.checkout-summary > .fine-print {
+  margin: 14px 0;
+  font-size: 11px !important;
+}
+@container viewport (max-width: 1100px) {
+  .checkout-page .checkout-layout {
+    grid-template-columns: minmax(0, 1fr) 310px;
+    gap: 28px;
+  }
+  .checkout-page .collector-fields {
+    gap: 20px 16px;
+  }
+  .checkout-page .checkout-items > div {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 8px 10px;
+    padding-right: 8px;
+  }
+  .checkout-page .checkout-items img {
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 72px;
+  }
+  .checkout-page .checkout-items strong {
+    grid-column: 2;
+    text-align: left;
+    font-size: 14px;
+  }
+}
+@container viewport (max-width: 900px) {
+  .checkout-page .checkout-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+  .checkout-page .checkout-summary {
+    width: 100%;
+  }
+  .checkout-page .checkout-items > div {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+  }
+  .checkout-page .checkout-items img {
+    grid-row: auto;
+    width: 72px;
+    height: 72px;
+  }
+  .checkout-page .checkout-items strong {
+    grid-column: auto;
+    font-size: 16px;
+    text-align: right;
+  }
+}
+@container viewport (max-width: 600px) {
+  .checkout-page .breadcrumbs {
+    margin: 24px 0 32px;
+    font-size: 12px;
+  }
+  .checkout-page .collector-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .checkout-page .checkout-note {
+    width: 100%;
+    margin-top: 24px;
+  }
+  .checkout-page .checkout-items > div {
+    grid-template-columns: 56px minmax(0, 1fr);
+    padding-right: 10px;
+    gap: 4px 10px;
+    font-size: 13px;
+  }
+  .checkout-page .checkout-items img {
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 72px;
+  }
+  .checkout-page .checkout-items strong {
+    grid-column: 2;
+    text-align: left;
+    font-size: 14px;
+  }
+  .checkout-page .checkout-summary > h2 {
+    font-size: 17px;
+  }
+}
+@container viewport (max-width: 340px) {
+  .checkout-page .checkout-items > div {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 4px 8px;
+    padding-right: 6px;
+    font-size: 12px;
+  }
+  .checkout-page .checkout-items img {
+    width: 44px;
+    height: 64px;
+  }
+  .checkout-page .checkout-items strong {
+    font-size: 12px;
+  }
+  .checkout-page .field label {
+    overflow-wrap: anywhere;
+  }
+}

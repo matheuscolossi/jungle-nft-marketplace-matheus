@@ -1,0 +1,544 @@
+/* Medidas e cores compartilhadas pelos frames do Figma. */
+.site {
+  max-width: 1440px;
+  padding: 0 120px;
+}
+.site-header {
+  height: 69px;
+  min-height: 69px;
+  padding-top: 24px;
+  align-items: flex-start;
+  gap: 28px;
+  border-color: #55321f;
+}
+.brand {
+  font-size: 14px;
+  letter-spacing: 1.4px;
+  line-height: 34px;
+  gap: 0;
+  white-space: nowrap;
+}
+.site-header > .brand {
+  flex: 0 0 160px;
+}
+.desktop-nav {
+  gap: 36px;
+  height: 45px;
+  align-items: flex-start;
+  font-size: 16px;
+}
+.desktop-nav > a {
+  height: 45px;
+  align-items: flex-start;
+  padding-top: 3px;
+}
+.desktop-nav .nav-active:after {
+  height: 3px;
+}
+.header-actions {
+  gap: 14px;
+  margin-left: 0;
+  align-items: center;
+}
+.header-actions > .btn {
+  min-height: 34px;
+}
+.header-actions .header-search {
+  width: 24px;
+  min-width: 24px;
+  height: 34px;
+  padding: 0;
+  color: var(--foreground);
+}
+.header-actions > .btn-sm {
+  font-size: 14px;
+  padding: 4px 10px;
+  gap: 4px;
+}
+.cart-link {
+  padding: 3px 0;
+  width: 28px;
+}
+.cart-link > span {
+  font-size: 10px;
+  min-width: 14px;
+  height: 14px;
+  right: -2px;
+  top: -3px;
+}
+.connection-status {
+  font-size: 9px;
+}
+.site-market-flow .site-header {
+  border-bottom-color: transparent;
+}
+.field {
+  font-size: 14px;
+}
+.field input,
+.field select,
+.field textarea {
+  font-size: 14px;
+}
+.field-hint,
+.field-error {
+  font-size: 12px;
+}
+.form-grid {
+  gap: 20px 24px;
+}
+.form-section h2 {
+  font-size: 18px;
+}
+.purchase-layout {
+  grid-template-columns: minmax(0, 1fr) 334px;
+  gap: 48px;
+}
+.summary {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.summary h2 {
+  font-size: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.totals {
+  font-size: 14px;
+}
+.fine-print {
+  font-size: 12px !important;
+}
+.cart-item h2 {
+  font-size: 16px;
+}
+.cart-item p,
+.cart-unit,
+.cart-line-total {
+  font-size: 12px;
+}
+.cart-item {
+  background: #241612;
+}
+.cart-item:nth-child(even) {
+  background: #20130f;
+}
+.cart-head {
+  font-size: 14px;
+}
+.checkout-steps {
+  font-size: 12px;
+}
+.breadcrumbs {
+  font-size: 14px;
+  margin: 32px 0;
+}
+.related {
+  margin-top: 96px;
+}
+.related > h2 {
+  font-size: 18px;
+  border-color: var(--border);
+}
+.related-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+.related-grid .nft-card > .eyebrow {
+  display: none;
+}
+.related-grid .card-art {
+  border-radius: 0;
+  padding: 7px;
+  background: #241612;
+}
+.related-grid .card-art img {
+  aspect-ratio: 1;
+  border-radius: 10px 10px 0 0;
+}
+.related-grid .nft-card h3 {
+  font-size: 14px;
+  margin: 12px 0 6px;
+}
+.related-grid .card-meta {
+  font-size: 14px;
+  gap: 4px;
+  align-items: flex-start;
+  flex-direction: column;
+}
+.related-grid .card-meta span:last-child {
+  font-size: 10px;
+}
+.figma-footer {
+  padding-top: 96px;
+}
+.figma-footer .benefits {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(280px, 1.35fr);
+  padding: 32px 16px;
+  gap: 0;
+  background: #241612;
+}
+.figma-footer .benefits > div {
+  padding: 0 16px;
+  min-width: 0;
+}
+.figma-footer .benefits > div + div {
+  border-left: 1px solid var(--primary);
+}
+.figma-footer .benefit-icon {
+  width: 74px;
+  height: 74px;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.figma-footer .benefits h3 {
+  font-size: 17px;
+  line-height: 1.25;
+  margin: 0 0 12px;
+}
+.figma-footer .benefits p {
+  font-size: 14px;
+  line-height: 22px;
+  margin: 0;
+}
+.figma-footer .footer-feature {
+  padding-left: 16px;
+  border-color: var(--primary);
+}
+.figma-footer .footer-feature h3 {
+  font-size: 18px;
+}
+.newsletter-input {
+  display: flex;
+  margin: 16px 0 12px;
+  min-width: 0;
+}
+.newsletter-input input {
+  min-width: 0;
+  height: 40px;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: #38220f;
+  border: 0;
+  border-radius: 6px 0 0 6px;
+}
+.newsletter-input .btn {
+  flex-shrink: 0;
+  height: 40px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 0 6px 6px 0;
+  font-size: 16px;
+}
+.figma-footer .footer-feature p {
+  font-size: 13px;
+}
+.figma-footer .footer-feature p[role="status"]:empty {
+  display: none;
+}
+.figma-footer .footer-brand {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 36px;
+  padding: 24px 32px;
+  min-height: 88px;
+  background: #38220f;
+  font-size: 14px;
+}
+.figma-footer .footer-brand > span {
+  min-width: 0;
+}
+.figma-footer .footer-links {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 36px;
+  padding: 32px;
+  background: #241612;
+}
+.figma-footer .footer-links h3 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.figma-footer .footer-links a,
+.figma-footer .footer-links button {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 24px;
+  min-height: 30px;
+  color: var(--foreground);
+}
+.figma-footer .footer-links button {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+.figma-footer .footer-links .demo-trigger {
+  color: var(--primary);
+  font-size: 11px;
+}
+.figma-footer .footer-links button:disabled {
+  cursor: help;
+  opacity: 0.65;
+}
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 28px;
+}
+.social-links > button {
+  width: 32px;
+  height: 32px;
+}
+.social-links img {
+  max-width: none;
+}
+.wallet-chip {
+  display: inline-block;
+  border: 1px solid #55321f;
+  border-radius: 6px;
+  background: #38220f;
+  color: #e89b55;
+  padding: 5px 7px;
+  font-size: 9px;
+  line-height: 16px;
+}
+.figma-footer .copyright {
+  font-size: 14px;
+  padding: 12px;
+}
+.site-order .site-header,
+.site-order .footer {
+  display: none;
+}
+.site-order .receipt {
+  max-width: 600px;
+  margin: 120px auto 96px;
+  padding: 36px 32px;
+  background: #241612;
+  border: 0;
+  border-bottom: 10px solid var(--primary);
+}
+.site-order .receipt h1 {
+  font-size: 20px;
+}
+.site-order .receipt-icon {
+  width: 80px;
+  height: 80px;
+  background: transparent;
+  border: 0;
+  margin-bottom: 16px;
+}
+.site-order .receipt > p {
+  font-size: 14px;
+}
+.site-order .receipt-card {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.site-order .receipt-details {
+  font-size: 12px;
+}
+.route-demo {
+  display: flex;
+  justify-content: flex-end;
+  padding: 24px 0;
+}
+@container viewport (max-width: 1200px) {
+  .site {
+    padding: 0 40px;
+  }
+  .site-header > .brand {
+    flex-basis: 100px;
+  }
+  .desktop-nav {
+    gap: 22px;
+    font-size: 14px;
+  }
+  .connection-status {
+    display: none;
+  }
+  .purchase-layout {
+    gap: 30px;
+  }
+}
+@container viewport (max-width: 900px) {
+  .site {
+    padding: 0 28px;
+  }
+  .site-header {
+    padding-top: 16px;
+    height: 69px;
+  }
+  .desktop-nav {
+    display: none;
+  }
+  .mobile-menu {
+    display: inline-flex;
+  }
+  .purchase-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .summary {
+    position: static;
+  }
+  .related-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .figma-footer .benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 0;
+  }
+  .figma-footer .benefits > div:nth-child(3) {
+    border-left: 0;
+  }
+  .figma-footer .footer-brand,
+  .figma-footer .footer-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+  }
+}
+@container viewport (max-width: 600px) {
+  .site {
+    padding: 0 28px;
+  }
+  .site-header {
+    height: auto;
+    min-height: 80px;
+    padding-top: 22px;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .site-header > .brand {
+    flex-basis: auto;
+    font-size: 18px;
+  }
+  .header-actions {
+    gap: 10px;
+  }
+  .header-actions > .btn-sm {
+    font-size: 12px;
+    padding: 5px 7px;
+  }
+  .header-search {
+    display: none;
+  }
+  .breadcrumbs {
+    font-size: 12px;
+    margin: 24px 0;
+  }
+  .page-title h1 {
+    font-size: 24px;
+  }
+  .form-grid {
+    gap: 0;
+  }
+  .field,
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 14px;
+  }
+  .checkout-steps {
+    font-size: 10px;
+    gap: 8px;
+  }
+  .related {
+    margin-top: 56px;
+  }
+  .related-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 16px;
+  }
+  .related-grid .nft-card h3 {
+    font-size: 12px;
+  }
+  .related-grid .card-meta {
+    font-size: 12px;
+  }
+  .figma-footer {
+    padding-top: 64px;
+  }
+  .figma-footer .benefits {
+    padding: 24px 12px;
+  }
+  .figma-footer .benefits > div {
+    padding: 0 12px;
+  }
+  .figma-footer .benefit-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+  .figma-footer .benefits h3 {
+    font-size: 13px;
+  }
+  .figma-footer .benefits p {
+    font-size: 11px;
+    line-height: 18px;
+  }
+  .figma-footer .footer-brand,
+  .figma-footer .footer-links {
+    padding: 24px;
+    gap: 24px 18px;
+    font-size: 11px;
+  }
+  .figma-footer .footer-links h3 {
+    font-size: 13px;
+  }
+  .figma-footer .footer-links a,
+  .figma-footer .footer-links button {
+    font-size: 11px;
+  }
+  .figma-footer .footer-feature h3 {
+    font-size: 13px;
+  }
+  .newsletter-input {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .newsletter-input input,
+  .newsletter-input .btn {
+    border-radius: 4px;
+    width: 100%;
+    font-size: 12px;
+  }
+  .figma-footer .copyright {
+    font-size: 10px;
+  }
+  .site-order .receipt {
+    margin: 36px auto;
+    padding: 24px 20px;
+  }
+}
+@container viewport (max-width: 340px) {
+  .site {
+    padding: 0 14px;
+  }
+  .site-header {
+    padding-bottom: 16px;
+  }
+  .site-header > .brand {
+    flex-basis: 100%;
+  }
+  .header-actions {
+    margin-left: 0;
+  }
+  .related-grid,
+  .figma-footer .benefits,
+  .figma-footer .footer-brand,
+  .figma-footer .footer-links {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .figma-footer .benefits > div + div {
+    border-left: 0;
+  }
+  .site-order .receipt {
+    padding: 20px 12px;
+  }
+}

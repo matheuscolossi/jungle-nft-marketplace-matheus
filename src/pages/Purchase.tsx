@@ -4,7 +4,6 @@ import { Link, useParams } from "@tanstack/react-router";
 import {
   ArrowRight,
   Check,
-  CheckCircle2,
   Clock,
   LockKeyhole,
   Trash2,
@@ -307,7 +306,13 @@ export function OrderPage() {
     <section className="receipt">
       <div className={`receipt-icon ${order.status}`}>
         {order.status === "confirmed" ? (
-          <CheckCircle2 size={44} />
+          <img
+            src="/assets/figma/receipt-thank-you.svg"
+            width="65.1639"
+            height="80"
+            alt=""
+            aria-hidden="true"
+          />
         ) : order.status === "pending" ? (
           <Clock size={44} />
         ) : (

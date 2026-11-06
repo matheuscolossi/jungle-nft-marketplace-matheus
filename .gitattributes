@@ -1,0 +1,3 @@
+public/assets/figma/*.svg text eol=lf
+public/assets/figma/manifest.json text eol=lf
+public/fonts/*.txt text eol=lf

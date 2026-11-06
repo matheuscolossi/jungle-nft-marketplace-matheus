@@ -244,7 +244,7 @@ export function Related() {
     queryFn: async ({ signal }) =>
       (
         await api.get<{ items: Nft[] }>("/nfts", {
-          params: { pageSize: 4 },
+          params: { pageSize: 5 },
           signal,
         })
       ).data,

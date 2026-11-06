@@ -1,68 +1,44 @@
-# Inventário e proveniência dos assets
+# Assets e tipografia
 
-O layout de referência é o [Frontend Challenge no Figma](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1). O arquivo foi inspecionado no navegador para orientar composição, paleta e hierarquia. A visualização anônima não disponibilizou a extração dos arquivos originais de imagem ou fonte.
+A referência é o [arquivo original do desafio](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge). Em 6 de novembro de 2026, a [cópia fornecida pelo usuário](https://www.figma.com/design/8OMEkRvebRuOLP9QeIJLf1/Frontend-Challenge--Copy-) permitiu consultar os frames, os estilos e os assets pela integração oficial do Figma.
 
-As quatro imagens raster abaixo foram geradas durante esta implementação com o Imagegen integrado ao Codex. Não são exports nem cópias dos assets originais do Figma. Os originais de geração foram retidos no diretório gerenciado `$CODEX_HOME/generated_images/`; a execução e a publicação dependem somente dos arquivos locais versionados em `public/assets/`.
+## Artes usadas na interface
 
-## Imagens finais
+As quatro artes abaixo vieram do frame **Desktop / Início** (2:2). São as mesmas artes reutilizadas pelos cartões, destaques, promoções e frames de compra do Figma. Não são as ilustrações substitutas da versão inicial.
 
-Todas têm 800 × 800 px, fundo opaco e formato WebP. Os 24 registros do catálogo reutilizam essas quatro ilustrações, com nomes, categorias, coleções, edições, preços e estoques diferentes. A repetição visual é uma limitação explícita do conjunto de fixtures.
+| Asset servido                        | PNG original                         | Dimensões servidas |      Tamanho |
+| ------------------------------------ | ------------------------------------ | ------------------ | -----------: |
+| public/assets/figma/hero-ape.webp    | docs/figma-originals/hero-ape.png    | 800 × 800          | 60.740 bytes |
+| public/assets/figma/sage-nomad.webp  | docs/figma-originals/sage-nomad.png  | 800 × 800          | 65.540 bytes |
+| public/assets/figma/neon-vessel.webp | docs/figma-originals/neon-vessel.png | 800 × 800          | 53.970 bytes |
+| public/assets/figma/golden-beat.webp | docs/figma-originals/golden-beat.png | 800 × 800          | 74.814 bytes |
 
-| Arquivo                          | Conteúdo                                                                                                       |       Tamanho |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------: |
-| `public/assets/emerald-ape.webp` | Macaco com óculos verdes, jaqueta varsity verde e creme e medalhão dourado, sobre fundo oliva claro.           | 117.514 bytes |
-| `public/assets/sage-nomad.webp`  | Macaco de pelo cinza, chapéu bucket verde e moletom roxo, sobre fundo pêssego claro.                           | 118.580 bytes |
-| `public/assets/ivory-baron.webp` | Macaco de pelo escuro com blazer marfim e gola alta verde, sobre fundo sálvia.                                 |  93.572 bytes |
-| `public/assets/golden-beat.webp` | Macaco de pelo dourado com óculos metálicos, camisa de linho creme e corrente fina, sobre fundo amarelo claro. | 119.208 bytes |
+Os PNG recebidos têm 1254 × 1254 px e foram preservados sem modificação em docs/figma-originals/. Para atender à otimização de imagens do enunciado, a interface serve derivados WebP de 800 × 800 px, qualidade 88, gerados com Sharp. A arte foi mantida; não foram gerados personagens ou fundos novos nesta revisão. Os originais ficam fora de public/ para não aumentar o pacote publicado.
 
-Resumos dos briefs de geração, apresentados como documentação editorial e não como transcrição literal dos prompts:
+Os 24 NFTs são fixtures dinâmicas e reutilizam essas quatro artes. IDs, preços, estoques, coleções e edições são definidos pela simulação; não são números fixos copiados dos frames. A migração de schema 2 para 3 troca somente image/images do catálogo. Recibos e cotações anteriores preservam seus snapshots.
 
-- **Emerald Ape:** retrato quadrado de um personagem macaco colecionável, enquadrado do peito para cima em três quartos, com pelo castanho detalhado, expressão confiante, óculos verdes, jaqueta varsity esmeralda e creme, detalhes dourados e medalhão. Fundo oliva claro, luz de estúdio suave, acabamento tridimensional polido, sem letras, logotipos ou marca-d'água.
-- **Sage Nomad:** retrato quadrado de um macaco de pelo cinza com expressão serena, chapéu bucket verde-oliva e moletom roxo. Enquadramento do peito para cima em três quartos, fundo pêssego claro, textura detalhada e iluminação de estúdio suave, coerente com a coleção, sem texto ou marcas.
-- **Ivory Baron:** retrato quadrado de um macaco de pelo preto com expressão sóbria, blazer marfim e gola alta verde-escura. Enquadramento do peito para cima em três quartos, fundo sálvia liso, renderização tridimensional detalhada e luz suave, sem texto ou marcas.
-- **Golden Beat:** retrato quadrado de um macaco de pelo dourado, expressão sorridente, óculos de armação dourada, camisa clara de linho e corrente fina. Enquadramento do peito para cima em três quartos, fundo amarelo suave, acabamento tridimensional detalhado, sem texto ou marcas.
+## SVGs
 
-SHA-256 dos arquivos entregues:
+Os arquivos em public/assets/figma/ incluem ícones, linhas, elementos decorativos, marcas sociais e a ilustração de confirmação obtidos dos contextos dos frames de início, autenticação, conta e confirmação. Foram baixados dos URLs temporários fornecidos pela integração; nenhum URL temporário é usado em execução.
 
-```text
-emerald-ape.webp  30b9731b104e03a22abca9fd4421ec87a8f96f39064ec38c950e328cb8d17ba9
-sage-nomad.webp   ca350c66b722320e9109a3c13aed8e41d1ee4879c22d00e8dee83a2b52d5ce0f
-ivory-baron.webp  1154341252a8649d821c3b1e4caa286d3828300c7949ac22458627124c6b82b9
-golden-beat.webp  baef9d52d5043114e200634b530c3a37d56a62f8f061c37a2d01cc9f3f70a1be
-```
+As sete camadas SVG da marca Google são posicionadas conforme o componente original. Os controles sociais de autenticação ficam desabilitados, com explicação de que o acesso demonstrativo usa e-mail. Redes sociais e conteúdo editorial não simulam autenticação, envio ou sucesso de operações externas.
 
-## Assets complementares
+## Fonte
 
-- `public/assets/avatar.svg`: avatar vetorial local de demonstração. O usuário pode substituí-lo por upload PNG/JPEG/WebP de até 2 MB, persistido na base simulada.
-- `public/assets/nft-1.svg` a `nft-8.svg`: ilustrações vetoriais locais produzidas durante a implementação inicial. Permanecem disponíveis como assets auxiliares; o catálogo final usa os quatro WebP acima.
-- `public/favicon.svg`: ícone vetorial local da aplicação.
-- Ícones da interface: componentes do pacote `lucide-react`, com licença e versão resolvida pelo lockfile.
-- Tipografia: `Courier New` do sistema, com fallback `monospace`. Não foi extraída uma fonte do Figma e não há dependência de hospedagem remota de fontes.
+O Figma identifica **Roboto Mono**. A aplicação usa a versão variável Latin em public/fonts/roboto-mono-latin-variable.woff2, com 32.796 bytes, obtida pelo CSS oficial do Google Fonts. O mesmo arquivo atende aos pesos 400, 500 e 700; os caracteres portugueses usados na interface pertencem ao subconjunto entregue.
 
-Essa seleção preserva a direção visual observada, mas não garante fidelidade exata de imagens, fonte ou pixels. As capturas do Playwright comparam a implementação entregue contra seus próprios baselines estáveis; não são um certificado de igualdade com os frames do Figma.
+A fonte é local, com preload e font-display: swap. Não há consulta ao Google Fonts em execução. A licença SIL Open Font License 1.1 acompanha o arquivo em public/fonts/OFL-RobotoMono.txt. Referências: [projeto oficial Roboto Mono](https://github.com/googlefonts/RobotoMono) e [licença no Google Fonts](https://github.com/google/fonts/blob/main/ofl/robotomono/OFL.txt).
 
-## Prompts enviados ao Imagegen integrado
+## Inventário e arquivos legados
 
-### Emerald Ape
+O inventário com tamanhos e SHA-256 está em public/assets/figma/manifest.json. Ele registra os arquivos originais, derivados, SVGs e a fonte.
 
-```text
-Use case: stylized-concept. Asset type: square NFT art hero for a digital art marketplace. Premium highly detailed 3D illustrated portrait of a stylish friendly brown chimpanzee, bust from mid-chest, looking right in three-quarter view, sage green round sunglasses with dark green lenses, emerald green varsity jacket with cream sleeves and yellow piping, gold chain and round pendant. Light warm cream/sage softly lit plain background. Thick realistic fur, polished cinematic claylike 3D render, soft studio shadows. Subject fills entire square in centered composition, hair near top and torso cropped at bottom, no text, no watermark, no UI, no border.
-```
+Os antigos public/assets/emerald-ape.webp, sage-nomad.webp, ivory-baron.webp e golden-beat.webp foram gerados com Imagegen durante a versão inicial. Permanecem disponíveis para que recibos antigos continuem exibindo a imagem realmente comprada naquela versão. A documentação e os prompts daquela etapa permanecem no histórico Git, por exemplo no commit bf3aa84. Esses arquivos não alimentam o catálogo atual.
 
-### Sage Nomad
+Avatar de demonstração, favicon e vetores auxiliares anteriores também permanecem locais. O avatar pode ser substituído por upload; imagens e dados da conta são dinâmicos.
 
-```text
-Square premium 3D NFT collection portrait, bust from mid chest of a calm pale silver-gray chimpanzee wearing a sage green bucket hat and violet purple hoodie, warm cream softly lit plain background, facing right three-quarter view, fine realistic fur, polished cinematic stylized 3D render, soft studio lighting, centered subject fills entire square with hair/hat near top, torso cropped bottom. No text, no logos, no border, no UI. Asset for art marketplace.
-```
+## Conferência visual
 
-### Ivory Baron
+A revisão usa os contextos de design e screenshots do Figma como referência para composição, cores, fonte e slots dos assets. Busca, seleção de carteiras, validações, estados assíncronos e dados fictícios exigem adaptações de interação.
 
-```text
-Square premium 3D NFT collection portrait, bust from mid chest of an elegant dark charcoal black chimpanzee wearing an ivory cream blazer over a dark emerald turtleneck, pale sage softly lit plain background, facing right three-quarter view, fine realistic fur, polished cinematic stylized 3D render, soft studio lighting, centered subject fills entire square, hair near top torso cropped bottom. No text, no logos, no border, no UI. Asset for art marketplace.
-```
-
-### Golden Beat
-
-```text
-Square premium 3D NFT collection portrait, bust from mid chest of a stylish friendly golden-orange chimpanzee wearing an ivory cream linen shirt and thin gold chain, pale buttery cream softly lit plain background, facing right three-quarter view, fine realistic fur, polished cinematic stylized 3D render, soft studio lighting, centered subject fills entire square with hair near top, torso cropped bottom. No text, no logos, no border, no UI. Asset for art marketplace.
-```
+Os baselines Playwright continuam sendo referências da implementação, não uma prova automática de igualdade pixel a pixel com o Figma. Qualquer diferença conhecida relevante deve constar em REQUIREMENTS-AUDIT.md.

@@ -416,79 +416,230 @@ export function CheckoutPage() {
     );
   if (!cart.data.items.length) return <Empty title="Seu carrinho está vazio" />;
   return (
-    <>
+    <div className="checkout-page">
       <div className="breadcrumbs">
-        <Link to="/cart">Carrinho</Link> / <span>Pagamento</span>
+        <Link to="/">Início</Link> / <Link to="/cart">Carrinho</Link> /{" "}
+        <span>Pagamento</span>
       </div>
-      <div className="page-title">
-        <h1>
-          Um passo para sua coleção<span className="accent">.</span>
-        </h1>
-      </div>
-      <div className="checkout-steps">
-        <span>01 · Seleção</span>
-        <span className="accent">02 · Pagamento</span>
-        <span>03 · Sua coleção</span>
-      </div>
-      <div className="purchase-layout">
-        <form
-          className="checkout-form"
-          onSubmit={reviewOrder}
-          noValidate
-          ref={formRef}
+      <h1 className="sr-only">Um passo para sua coleção.</h1>
+      <ol className="sr-only" aria-label="Etapas da compra">
+        <li>Seleção</li>
+        <li aria-current="step">Pagamento</li>
+        <li>Sua coleção</li>
+      </ol>
+      <form
+        className="purchase-layout checkout-layout"
+        onSubmit={reviewOrder}
+        noValidate
+        ref={formRef}
+      >
+        <section className="checkout-form" aria-labelledby="collector-heading">
+          <h2 id="collector-heading">Perfil do colecionador</h2>
+          <div className="form-grid collector-fields">
+            <Field
+              label="Nome completo"
+              id="checkout-name"
+              autoComplete="name"
+              required
+              minLength={2}
+              maxLength={80}
+              value={draft.name}
+              onChange={(event) => set("name", event.target.value)}
+              error={errors.name}
+            />
+            <Field
+              label="Nome de usuário"
+              id="checkout-username"
+              autoComplete="username"
+              required
+              maxLength={30}
+              value={draft.username}
+              onChange={(event) => set("username", event.target.value)}
+              error={errors.username}
+            />
+            <SelectField
+              id="checkout-network"
+              label="Rede"
+              error={errors.network}
+            >
+              <select
+                id="checkout-network"
+                required
+                value={draft.network}
+                {...selectProps("network")}
+                onChange={(event) => {
+                  set("network", event.target.value as Network);
+                  setConnected(false);
+                }}
+              >
+                <option>Ethereum</option>
+                <option>Polygon</option>
+              </select>
+            </SelectField>
+            <Field
+              label="Nome do perfil"
+              id="checkout-profileName"
+              required
+              maxLength={80}
+              value={draft.profileName}
+              onChange={(event) => set("profileName", event.target.value)}
+              error={errors.profileName}
+            />
+            <Field
+              label="Endereço da carteira"
+              id="checkout-address"
+              value={selectedWallet?.address ?? ""}
+              readOnly
+              required
+              error={errors.address}
+              hint="Endereço da carteira cadastrada selecionada."
+            />
+            <Field
+              label="ENS ou carteira secundária"
+              id="checkout-secondaryAddress"
+              value={draft.secondaryAddress ?? ""}
+              onChange={(event) => set("secondaryAddress", event.target.value)}
+              error={errors.secondaryAddress}
+              hint="Opcional. Use um nome .eth ou endereço 0x."
+            />
+            <SelectField
+              id="checkout-walletType"
+              label="Tipo da carteira"
+              error={errors.walletType}
+            >
+              <select
+                id="checkout-walletType"
+                required
+                value={draft.walletType}
+                {...selectProps("walletType")}
+                onChange={(event) => {
+                  set("walletType", event.target.value as WalletType);
+                  setConnected(false);
+                }}
+              >
+                {walletTypes.map((type) => (
+                  <option key={type}>{type}</option>
+                ))}
+              </select>
+            </SelectField>
+            <Field
+              label="Código de indicação"
+              id="checkout-referralCode"
+              required
+              maxLength={32}
+              value={draft.referralCode}
+              onChange={(event) => set("referralCode", event.target.value)}
+              error={errors.referralCode}
+            />
+            <Field
+              label="E-mail"
+              id="checkout-email"
+              type="email"
+              autoComplete="email"
+              required
+              maxLength={254}
+              value={draft.email}
+              onChange={(event) => set("email", event.target.value)}
+              error={errors.email}
+            />
+            <Field
+              label="Nome ENS"
+              id="checkout-ensName"
+              required
+              placeholder="colecionador.eth"
+              value={draft.ensName}
+              onChange={(event) => set("ensName", event.target.value)}
+              error={errors.ensName}
+            />
+          </div>
+          <div className="field checkout-note">
+            <label htmlFor="checkout-note">Observação (opcional)</label>
+            <textarea
+              id="checkout-note"
+              maxLength={280}
+              rows={5}
+              value={draft.note ?? ""}
+              onChange={(event) => set("note", event.target.value)}
+              aria-invalid={Boolean(errors.note)}
+              aria-describedby={
+                errors.note ? "checkout-note-error" : "checkout-note-hint"
+              }
+            />
+            {errors.note && (
+              <p className="field-error" id="checkout-note-error">
+                {errors.note}
+              </p>
+            )}
+            <p className="field-hint" id="checkout-note-hint">
+              Até 280 caracteres. Use apenas dados fictícios.
+            </p>
+          </div>
+          <label className="checkbox-label checkout-acceptance">
+            <input
+              required
+              type="checkbox"
+              checked={accepted}
+              onChange={(event) => {
+                setAccepted(event.target.checked);
+                setErrors((previous) => ({ ...previous, accepted: "" }));
+              }}
+              aria-invalid={Boolean(errors.accepted)}
+              aria-describedby={
+                errors.accepted ? "checkout-accepted-error" : undefined
+              }
+            />{" "}
+            Entendo que esta compra é uma simulação, sem pagamento real.
+          </label>
+          {errors.accepted && (
+            <p className="field-error" id="checkout-accepted-error">
+              {errors.accepted}
+            </p>
+          )}
+          <p role="alert" className="field-error checkout-feedback">
+            {message ||
+              (Object.values(errors).some(Boolean)
+                ? "Confira os campos destacados antes de continuar."
+                : "")}
+          </p>
+        </section>
+        <aside
+          className="summary panel checkout-summary"
+          aria-labelledby="checkout-summary-heading"
         >
-          <section className="form-section">
-            <h2>
-              <span>01</span> Perfil do colecionador
-            </h2>
-            <div className="form-grid">
-              <Field
-                label="Nome completo"
-                id="checkout-name"
-                autoComplete="name"
-                required
-                minLength={2}
-                maxLength={80}
-                value={draft.name}
-                onChange={(event) => set("name", event.target.value)}
-                error={errors.name}
-              />
-              <Field
-                label="Nome de usuário"
-                id="checkout-username"
-                autoComplete="username"
-                required
-                maxLength={30}
-                value={draft.username}
-                onChange={(event) => set("username", event.target.value)}
-                error={errors.username}
-              />
-              <Field
-                label="E-mail"
-                id="checkout-email"
-                type="email"
-                autoComplete="email"
-                required
-                maxLength={254}
-                value={draft.email}
-                onChange={(event) => set("email", event.target.value)}
-                error={errors.email}
-              />
-              <Field
-                label="Nome do perfil"
-                id="checkout-profileName"
-                required
-                maxLength={80}
-                value={draft.profileName}
-                onChange={(event) => set("profileName", event.target.value)}
-                error={errors.profileName}
-              />
-            </div>
-          </section>
-          <section className="form-section">
-            <h2>
-              <span>02</span> Carteira e rede
-            </h2>
+          <h2 id="checkout-summary-heading">Seus NFTs</h2>
+          <div className="checkout-item-head" aria-hidden="true">
+            <span>NFTs</span>
+            <span>Subtotal</span>
+          </div>
+          <div className="checkout-items">
+            {quote.data?.items.map((item) => (
+              <div key={item.id}>
+                <img src={item.image} alt={item.name} width="72" height="72" />
+                <span>
+                  {item.name}
+                  <small>
+                    {item.quantity} × {eth(item.unitPrice)}
+                  </small>
+                </span>
+                <strong>{eth(item.total)}</strong>
+              </div>
+            ))}
+          </div>
+          {quote.isPending ? (
+            <Skeleton />
+          ) : quote.isError ? (
+            <ErrorState
+              error={quote.error}
+              retry={() => void quote.refetch()}
+            />
+          ) : (
+            <Summary quote={quote.data} />
+          )}
+          <section
+            className="checkout-wallet-section"
+            aria-labelledby="checkout-wallet-heading"
+          >
+            <h3 id="checkout-wallet-heading">Carteira e rede</h3>
             {!wallets.data.length ? (
               <p>
                 Cadastre uma carteira para continuar.{" "}
@@ -496,113 +647,33 @@ export function CheckoutPage() {
               </p>
             ) : (
               <>
-                <div className="form-grid">
-                  <SelectField
+                <SelectField
+                  id="checkout-walletId"
+                  label="Carteira"
+                  error={errors.walletId}
+                >
+                  <select
                     id="checkout-walletId"
-                    label="Carteira"
-                    error={errors.walletId}
-                  >
-                    <select
-                      id="checkout-walletId"
-                      required
-                      value={draft.walletId}
-                      {...selectProps("walletId")}
-                      onChange={(event) => {
-                        const wallet = wallets.data.find(
-                          (item) => item.id === event.target.value,
-                        );
-                        set("walletId", event.target.value);
-                        if (wallet) set("network", wallet.network);
-                        setConnected(false);
-                      }}
-                    >
-                      {wallets.data.map((wallet) => (
-                        <option key={wallet.id} value={wallet.id}>
-                          {wallet.name}
-                          {wallet.primary ? " · Principal" : ""}
-                        </option>
-                      ))}
-                    </select>
-                  </SelectField>
-                  <SelectField
-                    id="checkout-network"
-                    label="Rede"
-                    error={errors.network}
-                  >
-                    <select
-                      id="checkout-network"
-                      required
-                      value={draft.network}
-                      {...selectProps("network")}
-                      onChange={(event) => {
-                        set("network", event.target.value as Network);
-                        setConnected(false);
-                      }}
-                    >
-                      <option>Ethereum</option>
-                      <option>Polygon</option>
-                    </select>
-                  </SelectField>
-                  <Field
-                    label="Endereço da carteira"
-                    id="checkout-address"
-                    value={selectedWallet?.address ?? ""}
-                    readOnly
                     required
-                    error={errors.address}
-                    hint="Endereço da carteira cadastrada selecionada."
-                  />
-                  <SelectField
-                    id="checkout-walletType"
-                    label="Tipo da carteira"
-                    error={errors.walletType}
+                    value={draft.walletId}
+                    {...selectProps("walletId")}
+                    onChange={(event) => {
+                      const wallet = wallets.data.find(
+                        (item) => item.id === event.target.value,
+                      );
+                      set("walletId", event.target.value);
+                      if (wallet) set("network", wallet.network);
+                      setConnected(false);
+                    }}
                   >
-                    <select
-                      id="checkout-walletType"
-                      required
-                      value={draft.walletType}
-                      {...selectProps("walletType")}
-                      onChange={(event) => {
-                        set("walletType", event.target.value as WalletType);
-                        setConnected(false);
-                      }}
-                    >
-                      {walletTypes.map((type) => (
-                        <option key={type}>{type}</option>
-                      ))}
-                    </select>
-                  </SelectField>
-                  <Field
-                    label="Código de indicação"
-                    id="checkout-referralCode"
-                    required
-                    maxLength={32}
-                    value={draft.referralCode}
-                    onChange={(event) =>
-                      set("referralCode", event.target.value)
-                    }
-                    error={errors.referralCode}
-                  />
-                  <Field
-                    label="Nome ENS"
-                    id="checkout-ensName"
-                    required
-                    placeholder="colecionador.eth"
-                    value={draft.ensName}
-                    onChange={(event) => set("ensName", event.target.value)}
-                    error={errors.ensName}
-                  />
-                  <Field
-                    label="ENS ou carteira secundária"
-                    id="checkout-secondaryAddress"
-                    value={draft.secondaryAddress ?? ""}
-                    onChange={(event) =>
-                      set("secondaryAddress", event.target.value)
-                    }
-                    error={errors.secondaryAddress}
-                    hint="Opcional. Use um nome .eth ou endereço 0x."
-                  />
-                </div>
+                    {wallets.data.map((wallet) => (
+                      <option key={wallet.id} value={wallet.id}>
+                        {wallet.name}
+                        {wallet.primary ? " · Principal" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </SelectField>
                 <div className="wallet-actions">
                   <Button
                     type="button"
@@ -660,80 +731,9 @@ export function CheckoutPage() {
               </>
             )}
           </section>
-          <section className="form-section">
-            <h2>
-              <span>03</span> Revise sua seleção
-            </h2>
-            <div className="checkout-items">
-              {quote.data?.items.map((item) => (
-                <div key={item.id}>
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    width="56"
-                    height="56"
-                  />
-                  <span>
-                    {item.name}
-                    <small>
-                      {item.quantity} × {eth(item.unitPrice)}
-                    </small>
-                  </span>
-                  <strong>{eth(item.total)}</strong>
-                </div>
-              ))}
-            </div>
-            <div className="field">
-              <label htmlFor="checkout-note">Observação (opcional)</label>
-              <textarea
-                id="checkout-note"
-                maxLength={280}
-                rows={3}
-                value={draft.note ?? ""}
-                onChange={(event) => set("note", event.target.value)}
-                aria-invalid={Boolean(errors.note)}
-                aria-describedby={
-                  errors.note ? "checkout-note-error" : "checkout-note-hint"
-                }
-              />
-              {errors.note && (
-                <p className="field-error" id="checkout-note-error">
-                  {errors.note}
-                </p>
-              )}
-              <p className="field-hint" id="checkout-note-hint">
-                Até 280 caracteres. Use apenas dados fictícios.
-              </p>
-            </div>
-            <label className="checkbox-label">
-              <input
-                required
-                type="checkbox"
-                checked={accepted}
-                onChange={(event) => {
-                  setAccepted(event.target.checked);
-                  setErrors((previous) => ({ ...previous, accepted: "" }));
-                }}
-                aria-invalid={Boolean(errors.accepted)}
-                aria-describedby={
-                  errors.accepted ? "checkout-accepted-error" : undefined
-                }
-              />{" "}
-              Entendo que esta compra é uma simulação, sem pagamento real.
-            </label>
-            {errors.accepted && (
-              <p className="field-error" id="checkout-accepted-error">
-                {errors.accepted}
-              </p>
-            )}
-          </section>
-          <p role="alert" className="field-error">
-            {message ||
-              (Object.values(errors).some(Boolean)
-                ? "Confira os campos destacados antes de continuar."
-                : "")}
-          </p>
           <Button
+            type="submit"
+            className="checkout-review-button"
             ref={reviewButton}
             disabled={
               !connected ||
@@ -746,26 +746,15 @@ export function CheckoutPage() {
             {beginReview.isPending ? "Verificando dados…" : "Revisar pedido"}
             <ArrowRight size={16} />
           </Button>
-        </form>
-        <aside className="summary panel">
-          <h2>Resumo do pedido</h2>
-          {quote.isPending ? (
-            <Skeleton />
-          ) : quote.isError ? (
-            <ErrorState
-              error={quote.error}
-              retry={() => void quote.refetch()}
-            />
-          ) : (
-            <Summary quote={quote.data} />
-          )}
           <p className="fine-print">
             <LockKeyhole size={15} /> A cotação será revalidada antes de
             finalizar.
           </p>
-          <Link to="/cart">Editar seleção →</Link>
+          <Link className="checkout-edit-selection" to="/cart">
+            Editar seleção →
+          </Link>
         </aside>
-      </div>
+      </form>
       <Dialog.Root
         open={review}
         onOpenChange={(value) => !submit.isPending && setReview(value)}
@@ -820,6 +809,6 @@ export function CheckoutPage() {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-    </>
+    </div>
   );
 }

@@ -5,6 +5,9 @@ import { RouterProvider } from "@tanstack/react-router";
 import { queryClient } from "./lib/query";
 import { SessionProvider } from "./lib/session";
 import "./styles.css";
+import "./shell.css";
+import "./market.css";
+import "./checkout.css";
 import "./account.css";
 
 async function start() {

@@ -1,27 +1,34 @@
 @import "tailwindcss" source(none);
 @source "./";
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/roboto-mono-latin-variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+}
 @theme {
-  --color-background: #160f0b;
-  --color-foreground: #eee8df;
-  --color-primary: #dfa15b;
+  --color-background: #140d0a;
+  --color-foreground: #f5f1eb;
+  --color-primary: #d28a4c;
   --color-primary-foreground: #20140d;
   --color-muted: #ac9987;
-  --color-border: #443024;
-  --font-mono: "Courier New", monospace;
+  --color-border: #3f2319;
+  --font-mono: "Roboto Mono", monospace;
 }
 :root {
-  font-family: "Courier New", monospace;
-  color: #eee8df;
-  background: #160f0b;
+  font-family: "Roboto Mono", monospace;
+  color: #f5f1eb;
+  background: #140d0a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   font-size: 14px;
   line-height: 1.65;
-  --background: #160f0b;
-  --foreground: #eee8df;
-  --primary: #dfa15b;
-  --muted: #b6a18e;
-  --border: #443024;
+  --background: #140d0a;
+  --foreground: #f5f1eb;
+  --primary: #d28a4c;
+  --muted: #cfb28c;
+  --border: #3f2319;
   --ring: #f5c38c;
   --radius: 4px;
 }
@@ -495,7 +502,7 @@ input:invalid:not(:placeholder-shown):focus {
   opacity: 1;
 }
 .card-favorite > .btn {
-  background: #160f0bdd;
+  background: #140d0add;
   width: 32px;
   height: 32px;
   min-height: 32px;
@@ -2478,7 +2485,7 @@ input:invalid:not(:placeholder-shown):focus {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #dfa15b;
+  background: #d28a4c;
 }
 .connection-dot.connected {
   background: #bdd299;
