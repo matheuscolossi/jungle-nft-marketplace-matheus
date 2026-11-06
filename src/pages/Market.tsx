@@ -462,6 +462,7 @@ function MarketContent({
           />
         </aside>
         <div className="catalog-main">
+          <h2 className="sr-only">Explore o mercado</h2>
           <div className="catalog-toolbar">
             <div
               className="market-tabs"

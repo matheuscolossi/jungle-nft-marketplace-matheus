@@ -553,11 +553,14 @@ function FavoritesPage() {
         </h1>
       </div>
       {items.length ? (
-        <div className="nft-grid">
-          {items.map((n) => (
-            <NftCard key={n.id} nft={n} />
-          ))}
-        </div>
+        <section aria-label="Obras favoritas">
+          <h2 className="sr-only">Obras favoritas</h2>
+          <div className="nft-grid">
+            {items.map((n) => (
+              <NftCard key={n.id} nft={n} />
+            ))}
+          </div>
+        </section>
       ) : (
         <Empty
           title="Guarde o que inspira você"

@@ -17,6 +17,16 @@
       type="font/woff2"
       crossorigin
     />
+    <script>
+      if (["/", "/login", "/register"].includes(window.location.pathname)) {
+        const heroAsset = document.createElement("link");
+        heroAsset.rel = "preload";
+        heroAsset.as = "image";
+        heroAsset.href = "/assets/figma/hero-ape.webp";
+        heroAsset.fetchPriority = "high";
+        document.head.appendChild(heroAsset);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

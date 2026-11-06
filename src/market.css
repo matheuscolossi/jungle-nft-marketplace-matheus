@@ -780,6 +780,18 @@
     width: auto;
     font-size: 12px;
     padding: 8px 12px;
+    flex-shrink: 0;
+  }
+  .market-promo {
+    height: auto;
+    min-height: 250px;
+  }
+  .market-promo-copy {
+    height: auto;
+    min-height: 250px;
+  }
+  .market-promo-art {
+    height: 100%;
   }
 }
 @container viewport (max-width: 340px) {
