@@ -50,14 +50,22 @@ test("catalog composes filters, sort, pagination and restores history/refresh", 
   await expect(page).toHaveURL(/sort=price-desc/);
   await expect(page).not.toHaveURL(/page=2/);
   await expect(page.getByTestId("nft-card")).toHaveCount(6);
-  await page.getByLabel("Buscar NFTs").fill("Emerald");
+  await page
+    .getByLabel("Buscar NFTs")
+    .filter({ visible: true })
+    .fill("Emerald");
   await expect(page.getByTestId("nft-card")).toHaveCount(1);
   await expect(page.getByTestId("nft-card")).toContainText("Emerald Ape #042");
   await page.reload();
-  await expect(page.getByLabel("Buscar NFTs")).toHaveValue("Emerald");
+  await expect(
+    page.getByLabel("Buscar NFTs").filter({ visible: true }),
+  ).toHaveValue("Emerald");
   await expect(page.getByLabel("Ordenar por")).toHaveValue("price-desc");
   await expect(page.getByTestId("nft-card")).toHaveCount(1);
-  await page.getByLabel("Buscar NFTs").fill("not-a-real-work");
+  await page
+    .getByLabel("Buscar NFTs")
+    .filter({ visible: true })
+    .fill("not-a-real-work");
   await expect(
     page.getByRole("heading", { name: "Nenhuma obra encontrada" }),
   ).toBeVisible();
@@ -67,13 +75,18 @@ test("out-of-order responses do not replace the latest search", async ({
   page,
 }) => {
   await demo(page, { scenario: "out-of-order" });
-  await page.getByLabel("Buscar NFTs").fill("a");
-  await page.getByLabel("Buscar NFTs").fill("Emerald");
+  await page.getByLabel("Buscar NFTs").filter({ visible: true }).fill("a");
+  await page
+    .getByLabel("Buscar NFTs")
+    .filter({ visible: true })
+    .fill("Emerald");
   await expect(page.getByTestId("nft-card")).toHaveCount(1);
   await expect(page.getByTestId("nft-card")).toContainText("Emerald Ape #042");
   await page.clock.runFor(1800);
   await expect(page.getByTestId("nft-card")).toHaveCount(1);
-  await expect(page.getByLabel("Buscar NFTs")).toHaveValue("Emerald");
+  await expect(
+    page.getByLabel("Buscar NFTs").filter({ visible: true }),
+  ).toHaveValue("Emerald");
 });
 
 test("direct detail, gallery, unavailable editions and missing NFT", async ({
@@ -85,13 +98,21 @@ test("direct detail, gallery, unavailable editions and missing NFT", async ({
       .getByRole("heading", { name: "Emerald Ape #042", exact: true })
       .first(),
   ).toBeVisible();
+  if (page.viewportSize()!.width < 600) {
+    const purchase = await page
+      .getByRole("button", { name: "Comprar NFT", exact: true })
+      .boundingBox();
+    expect(purchase).not.toBeNull();
+    expect(purchase!.y).toBeGreaterThanOrEqual(0);
+    expect(purchase!.y + purchase!.height).toBeLessThanOrEqual(
+      page.viewportSize()!.height,
+    );
+  }
   await page.getByRole("button", { name: "Ver imagem 2", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Ver imagem 2", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(
-    page.getByLabel(/^Edição(?:\s*\*)?$/).locator("option[value=rare]"),
-  ).toBeDisabled();
+  await expect(page.getByRole("radio", { name: /Rara/ })).toBeDisabled();
   await expect(
     page.getByRole("button", { name: "Diminuir quantidade" }),
   ).toBeDisabled();
@@ -101,9 +122,7 @@ test("direct detail, gallery, unavailable editions and missing NFT", async ({
     page.getByRole("button", { name: "Aumentar quantidade" }),
   ).toBeDisabled();
   await page.goto("/nft/24");
-  await expect(
-    page.getByLabel(/^Edição(?:\s*\*)?$/).locator("option[value=standard]"),
-  ).toBeDisabled();
+  await expect(page.getByRole("radio", { name: /Padrão/ })).toBeDisabled();
   await expect(
     page.getByRole("button", { name: "Edição esgotada" }),
   ).toBeDisabled();

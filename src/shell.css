@@ -542,3 +542,30 @@
     padding: 20px 12px;
   }
 }
+
+@container viewport (min-width: 1101px) {
+  .figma-footer .benefits {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    min-height: 250px;
+  }
+  .figma-footer .benefits h3 {
+    line-height: 16px;
+  }
+  .figma-footer .footer-feature h3 {
+    line-height: 20px;
+  }
+  .figma-footer .footer-brand {
+    line-height: 20px;
+  }
+  .figma-footer .footer-links h3 {
+    line-height: 16px;
+  }
+  .figma-footer .footer-links a,
+  .figma-footer .footer-links button {
+    min-height: 24px;
+    line-height: 16px;
+  }
+  .figma-footer .copyright {
+    line-height: 16px;
+  }
+}

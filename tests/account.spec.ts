@@ -10,6 +10,14 @@ test("registration validates fields, reports conflicts and restores the session"
   page,
 }) => {
   await page.goto("/register?redirect=/profile");
+  if (page.viewportSize()!.width < 600) {
+    const switchLink = page.getByRole("link", { name: "Entre", exact: true });
+    const bounds = await switchLink.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(
+      page.viewportSize()!.height,
+    );
+  }
   await page.getByRole("button", { name: "Criar minha conta" }).click();
   await expect(page.getByText("Informe um e-mail válido.")).toBeVisible();
   await expectFieldError(page.getByLabel(/^Nome(?:\s*\*)?$/));

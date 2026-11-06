@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Check,
-  Clock,
-  LockKeyhole,
-  Trash2,
-  XCircle,
-} from "lucide-react";
+import { ArrowRight, Clock, LockKeyhole, Trash2, XCircle } from "lucide-react";
 import { api, err } from "../lib/api";
 import { useSession } from "../lib/session";
 import type { Cart, Order, Quote } from "../types";
@@ -276,89 +270,125 @@ export function CartPage() {
     </>
   );
 }
-export function OrderPage() {
-  const { id } = useParams({ from: "/order/$id" }),
-    { user } = useSession(),
-    client = useQueryClient();
-  const result = useQuery({
-    queryKey: ["order", user?.id, id],
-    queryFn: async ({ signal }) =>
-      (await api.get<Order>(`/orders/${id}`, { signal })).data,
-    refetchInterval: (query) =>
-      query.state.data?.status === "pending" ? 1500 : false,
-  });
-  useEffect(() => {
-    if (!result.data || result.data.status === "pending") return;
-    sessionStorage.removeItem(`kurio-attempt:${user?.id}`);
-    if (result.data.status === "confirmed") {
-      sessionStorage.removeItem(`kurio-checkout:${user?.id}`);
-      void client.invalidateQueries({ queryKey: ["cart"] });
-      void client.invalidateQueries({ queryKey: ["quote"] });
-    }
-  }, [result.data, user?.id, client]);
-  if (result.isPending) return <Skeleton detail />;
-  if (result.isError)
-    return (
-      <ErrorState error={result.error} retry={() => void result.refetch()} />
-    );
-  const order = result.data;
+
+function ConfirmedReceipt({ order }: { order: Order }) {
+  const hasDiscount = Boolean(order.quote.coupon);
   return (
-    <section className="receipt">
-      <div className={`receipt-icon ${order.status}`}>
-        {order.status === "confirmed" ? (
+    <section className="receipt receipt-confirmed">
+      <Link to="/" className="receipt-close" aria-label="Fechar recibo">
+        <img src="/assets/figma/auth-close.svg" alt="" />
+      </Link>
+      <header className="receipt-header">
+        <div className="receipt-icon confirmed">
           <img
             src="/assets/figma/receipt-thank-you.svg"
             width="65.1639"
             height="80"
             alt=""
-            aria-hidden="true"
           />
-        ) : order.status === "pending" ? (
-          <Clock size={44} />
-        ) : (
-          <XCircle size={44} />
-        )}
-      </div>
-      <p className="eyebrow">PEDIDO {order.id}</p>
-      <h1>
-        {order.status === "confirmed"
-          ? "A arte agora faz parte da sua história."
-          : order.status === "pending"
-            ? "Sua coleção está a caminho."
-            : "O pagamento foi recusado."}
-      </h1>
-      <p role="status">
-        {order.status === "confirmed"
-          ? "Compra confirmada na simulação. Bem-vindo ao próximo capítulo."
-          : order.status === "pending"
-            ? "Aguardando a confirmação simulada. Você pode atualizar esta página com segurança."
-            : order.reason ||
-              "Seus itens continuam no carrinho. Tente novamente quando quiser."}
-      </p>
-      {order.status !== "pending" && (
-        <div className="receipt-card panel">
-          <h2>
-            {order.status === "confirmed" ? (
-              <>
-                <Check size={18} /> Recibo da coleção
-              </>
-            ) : (
-              "Detalhes da tentativa"
-            )}
-          </h2>
-          {order.quote.items.map((item) => (
-            <div className="receipt-item" key={item.id}>
-              <img src={item.image} alt={item.name} width="64" height="64" />
+        </div>
+        <h1>Seus NFTs agora estão na sua carteira</h1>
+        <p role="status" className="sr-only">
+          Compra confirmada na simulação.
+        </p>
+      </header>
+      <dl className="receipt-transaction">
+        <div>
+          <dt>ID da transação</dt>
+          <dd>
+            <abbr title={order.transaction}>
+              {order.transaction.slice(0, 7)}…{order.transaction.slice(-4)}
+            </abbr>
+          </dd>
+        </div>
+        <div>
+          <dt>Data</dt>
+          <dd>
+            {new Date(order.createdAt)
+              .toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+              .replaceAll(" de ", " ")
+              .replace(".", "")}
+          </dd>
+        </div>
+        <div>
+          <dt>Total</dt>
+          <dd>{eth(order.quote.total)}</dd>
+        </div>
+        <div>
+          <dt>Carteira</dt>
+          <dd>{order.wallet.type}</dd>
+        </div>
+      </dl>
+      <div className="receipt-card">
+        <h2>Recibo da coleção</h2>
+        <table className="receipt-items">
+          <thead>
+            <tr>
+              <th scope="col">NFTs</th>
+              <th scope="col">Edições</th>
+              <th scope="col">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {order.quote.items.map((item) => (
+              <tr key={item.id}>
+                <td>
+                  <div className="receipt-artwork">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      width="65"
+                      height="65"
+                    />
+                    <div>
+                      <strong>{item.name}</strong>
+                      <small>
+                        ID do token: #
+                        {(
+                          item.name.match(/#(\d+)/)?.[1] ?? item.nftId
+                        ).padStart(4, "0")}
+                      </small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span aria-label={item.quantity + " edições"}>
+                    (x {item.quantity})
+                  </span>
+                </td>
+                <td>{eth(item.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <dl className="totals receipt-totals">
+          {hasDiscount && (
+            <>
               <div>
-                <strong>{item.name}</strong>
-                <p>
-                  {item.edition} · {item.quantity} edição(ões)
-                </p>
+                <dt>Subtotal</dt>
+                <dd>{eth(order.quote.subtotal)}</dd>
               </div>
-              <span>{eth(item.total)}</span>
-            </div>
-          ))}
-          <Summary quote={order.quote} />
+              <div>
+                <dt>Desconto ({order.quote.coupon})</dt>
+                <dd>− {eth(order.quote.discount)}</dd>
+              </div>
+            </>
+          )}
+          <div>
+            <dt>Taxa de rede</dt>
+            <dd>{eth(order.quote.fee)}</dd>
+          </div>
+          <div className="grand-total">
+            <dt>Total</dt>
+            <dd>{eth(order.quote.total)}</dd>
+          </div>
+        </dl>
+        <details className="receipt-collector">
+          <summary>Dados do pedido e do colecionador</summary>
           <dl className="receipt-details">
             <dt>Colecionador</dt>
             <dd>{order.collector.name}</dd>
@@ -413,10 +443,108 @@ export function OrderPage() {
             <dt>Data do pedido</dt>
             <dd>{new Date(order.createdAt).toLocaleString("pt-BR")}</dd>
           </dl>
-          <p className="fine-print">
-            Este recibo preserva os valores do momento da compra. A referência
-            de transação é fictícia e não existe em exploradores blockchain.
-          </p>
+        </details>
+        <p className="receipt-note">
+          Compra confirmada na simulação de {order.network}. Este recibo
+          preserva o snapshot do pedido. Não houve pagamento real nem
+          transferência em blockchain.
+        </p>
+        <div className="receipt-actions">
+          <Dialog.Root>
+            <Dialog.Trigger asChild>
+              <Button>Ver transação simulada</Button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="dialog-overlay" />
+              <Dialog.Content className="dialog-content panel">
+                <Dialog.Title>Transação simulada</Dialog.Title>
+                <Dialog.Description>
+                  Esta referência pertence à demonstração e não existe em
+                  exploradores blockchain.
+                </Dialog.Description>
+                <p>
+                  Pedido {order.id} · {order.network}
+                </p>
+                <code className="simulated-transaction">
+                  {order.transaction}
+                </code>
+                <Dialog.Close asChild>
+                  <Button variant="outline">Fechar</Button>
+                </Dialog.Close>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+          <Link to="/">Continuar explorando</Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function OrderPage() {
+  const { id } = useParams({ from: "/order/$id" }),
+    { user } = useSession(),
+    client = useQueryClient();
+  const result = useQuery({
+    queryKey: ["order", user?.id, id],
+    queryFn: async ({ signal }) =>
+      (await api.get<Order>(`/orders/${id}`, { signal })).data,
+    refetchInterval: (query) =>
+      query.state.data?.status === "pending" ? 1500 : false,
+  });
+  useEffect(() => {
+    if (!result.data || result.data.status === "pending") return;
+    sessionStorage.removeItem(`kurio-attempt:${user?.id}`);
+    if (result.data.status === "confirmed") {
+      sessionStorage.removeItem(`kurio-checkout:${user?.id}`);
+      void client.invalidateQueries({ queryKey: ["cart"] });
+      void client.invalidateQueries({ queryKey: ["quote"] });
+    }
+  }, [result.data, user?.id, client]);
+  if (result.isPending) return <Skeleton detail />;
+  if (result.isError)
+    return (
+      <ErrorState error={result.error} retry={() => void result.refetch()} />
+    );
+  const order = result.data;
+  if (order.status === "confirmed") return <ConfirmedReceipt order={order} />;
+  return (
+    <section className="receipt receipt-status">
+      <div className={"receipt-icon " + order.status}>
+        {order.status === "pending" ? (
+          <Clock size={44} />
+        ) : (
+          <XCircle size={44} />
+        )}
+      </div>
+      <p className="eyebrow">PEDIDO {order.id}</p>
+      <h1>
+        {order.status === "pending"
+          ? "Sua coleção está a caminho."
+          : "O pagamento foi recusado."}
+      </h1>
+      <p role="status">
+        {order.status === "pending"
+          ? "Aguardando a confirmação simulada. Você pode atualizar esta página com segurança."
+          : order.reason ||
+            "Seus itens continuam no carrinho. Tente novamente quando quiser."}
+      </p>
+      {order.status === "refused" && (
+        <div className="receipt-card panel">
+          <h2>Detalhes da tentativa</h2>
+          {order.quote.items.map((item) => (
+            <div className="receipt-item" key={item.id}>
+              <img src={item.image} alt={item.name} width="64" height="64" />
+              <div>
+                <strong>{item.name}</strong>
+                <p>
+                  {item.edition} · {item.quantity} edição(ões)
+                </p>
+              </div>
+              <span>{eth(item.total)}</span>
+            </div>
+          ))}
+          <Summary quote={order.quote} />
         </div>
       )}
       <div className="receipt-actions">
@@ -425,7 +553,7 @@ export function OrderPage() {
             to={order.status === "refused" ? "/cart" : "/"}
             onClick={() => {
               if (order.status === "refused")
-                sessionStorage.removeItem(`kurio-attempt:${user?.id}`);
+                sessionStorage.removeItem("kurio-attempt:" + user?.id);
             }}
           >
             {order.status === "refused"

@@ -722,3 +722,46 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.auth-identity-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-panel .auth-tabs a {
+  font-size: inherit;
+}
+.auth-description {
+  font-size: 14px;
+}
+@container viewport (max-width: 800px) {
+  .auth-identity-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .auth-identity-fields input {
+    min-width: 0;
+    font-size: 12px;
+    padding-inline: 12px;
+  }
+}
+@container viewport (max-width: 340px) {
+  .auth-identity-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-height: 860px) {
+  @container viewport (max-width: 800px) {
+    .auth-panel,
+    .auth-register .auth-panel {
+      padding-top: 64px;
+      gap: 28px;
+    }
+    .auth-mobile-brand {
+      height: 128px;
+      flex-basis: 128px;
+    }
+  }
+}

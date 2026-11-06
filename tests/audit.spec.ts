@@ -26,9 +26,7 @@ test("cart can recover from stock falling from eight to two and remove an exhaus
       String(count + 1),
     );
   }
-  await page
-    .getByRole("button", { name: "Adicionar ao carrinho", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Comprar NFT", exact: true }).click();
   const item = page.getByTestId("cart-item");
   await expect(item.getByLabel(/^Quantidade(?:\s*\*)?$/)).toHaveText("8");
   await demo(page, { action: "update-nft", nftId: "1", stock: 2 });
@@ -69,13 +67,10 @@ test("available filter and card include the rare edition when the standard editi
   await card
     .getByRole("link", { name: "Aurora Rising #477", exact: true })
     .click();
-  const edition = page.getByLabel(/^Edição(?:\s*\*)?$/);
-  await expect(edition.locator("option[value=standard]")).toBeDisabled();
-  await edition.selectOption("rare");
+  await expect(page.getByRole("radio", { name: /Padrão/ })).toBeDisabled();
+  await page.getByRole("radio", { name: /Rara/ }).check();
   await expect(page.locator(".detail-price")).toHaveText("1.65 ETH");
-  await page
-    .getByRole("button", { name: "Adicionar ao carrinho", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Comprar NFT", exact: true }).click();
   await expect(page.getByTestId("cart-item")).toContainText("Rare edition");
   expect((await mockRequest<Cart>(page, "/cart")).data.items[0]).toMatchObject({
     nftId: "24",
@@ -479,16 +474,12 @@ test("confirmation subtracts only the purchased snapshot and preserves later add
   ).toBeVisible();
   const receipt = new URL(page.url()).pathname;
   await page.goto("/nft/1");
-  await page
-    .getByRole("button", { name: "Adicionar ao carrinho", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Comprar NFT", exact: true }).click();
   await expect(
     page.getByTestId("cart-item").getByLabel(/^Quantidade(?:\s*\*)?$/),
   ).toHaveText("2");
   await page.goto("/nft/2");
-  await page
-    .getByRole("button", { name: "Adicionar ao carrinho", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Comprar NFT", exact: true }).click();
   await expect(page.getByTestId("cart-item")).toHaveCount(2);
   await demo(page, { action: "settle-orders" });
   const cart = (await mockRequest<Cart>(page, "/cart")).data;
@@ -552,7 +543,7 @@ test("keyboard alone completes login, quantity, coupon, checkout, review and rec
   await page.keyboard.press("Enter");
   await tabTo(
     page,
-    page.getByRole("button", { name: "Adicionar ao carrinho", exact: true }),
+    page.getByRole("button", { name: "Comprar NFT", exact: true }),
   );
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/cart$/);

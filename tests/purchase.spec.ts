@@ -98,12 +98,29 @@ test("complete purchase produces one immutable confirmed receipt after repeated 
   await expect(page).toHaveURL(/\/order\/order-/, { timeout: 20000 });
   await expect(
     page.getByRole("heading", {
-      name: "A arte agora faz parte da sua história.",
+      name: "Seus NFTs agora estão na sua carteira",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Recibo da coleção" }),
   ).toBeVisible();
+  await expect(page.locator(".receipt-transaction > div")).toHaveCount(4);
+  await expect(page.getByRole("table")).toContainText("Emerald Ape #042");
+  await page
+    .getByText("Dados do pedido e do colecionador", { exact: true })
+    .click();
+  await expect(page.locator(".receipt-details")).toContainText("reserva.eth");
+  const explorer = page.getByRole("button", {
+    name: "Ver transação simulada",
+    exact: true,
+  });
+  await explorer.click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "não existe em exploradores blockchain",
+  );
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(explorer).toBeFocused();
   const orders = await mockRequest<Order[]>(page, "/orders");
   expect(orders.data).toHaveLength(1);
   expect(orders.data[0].status).toBe("confirmed");
@@ -152,7 +169,7 @@ test("response loss recovers the same idempotent order without a second purchase
   await expect(page).toHaveURL(/\/order\/order-/, { timeout: 20000 });
   await expect(
     page.getByRole("heading", {
-      name: "A arte agora faz parte da sua história.",
+      name: "Seus NFTs agora estão na sua carteira",
     }),
   ).toBeVisible();
   const orders = await mockRequest<Order[]>(page, "/orders");
@@ -162,7 +179,7 @@ test("response loss recovers the same idempotent order without a second purchase
   await expect(page).toHaveURL(new RegExp(`/order/${id}$`));
   await expect(
     page.getByRole("heading", {
-      name: "A arte agora faz parte da sua história.",
+      name: "Seus NFTs agora estão na sua carteira",
     }),
   ).toBeVisible();
   expect((await mockRequest<Order[]>(page, "/orders")).data).toHaveLength(1);

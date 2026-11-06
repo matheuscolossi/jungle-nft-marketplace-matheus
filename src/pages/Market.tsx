@@ -6,7 +6,13 @@ import {
   useParams,
   useSearch,
 } from "@tanstack/react-router";
-import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Search,
+  ShoppingCart,
+  SlidersHorizontal,
+} from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { api, err } from "../lib/api";
 import type { Nft, PageResult } from "../types";
@@ -138,6 +144,15 @@ function MarketFilters({
               <option key={collection}>{collection}</option>
             ))}
           </select>
+        </label>
+        <label className="search-box market-filter-search">
+          <Search size={17} />
+          <input
+            aria-label="Buscar NFTs"
+            placeholder="Busque uma obra ou artista"
+            value={search.q}
+            onChange={(event) => update({ q: event.target.value })}
+          />
         </label>
         <div className="market-price-fields">
           <h3>Faixa de preço</h3>
@@ -535,7 +550,7 @@ function MarketContent({
               </Dialog.Root>
             )}
           </div>
-          <div aria-live="polite" className="query-status">
+          <div aria-live="polite" className="query-status sr-only">
             {result.isFetching && !result.isPending ? "Atualizando obras…" : ""}
           </div>
           {result.isPending ? (
@@ -666,26 +681,28 @@ export function DetailPage() {
     edition = nft.editions.find((e) => e.id === editionId) ?? nft.editions[0];
   return (
     <div className="nft-detail-page">
+      <Link className="detail-back" to="/" aria-label="Voltar ao mercado">
+        <ArrowLeft size={20} />
+      </Link>
       <div className="breadcrumbs">
-        <Link to="/">Início</Link> / <Link to="/">Mercado</Link> /{" "}
-        <span>{nft.name}</span>
+        <Link to="/">Início</Link> / <Link to="/">Mercado</Link>
       </div>
-      <section className="detail-grid">
+      <section className="detail-grid" aria-label="Obra e opções de compra">
         <div className="gallery">
-          <div className="thumbnails">
+          <div className="thumbnails" aria-label="Galeria da obra">
             {nft.images.map((src, i) => (
               <button
                 key={src}
                 className={image === i ? "selected" : ""}
-                aria-label={`Ver imagem ${i + 1}`}
+                aria-label={"Ver imagem " + (i + 1)}
                 aria-pressed={image === i}
                 onClick={() => setImage(i)}
               >
                 <img
                   src={src}
-                  alt={`Vista ${i + 1} de ${nft.name}`}
-                  width="90"
-                  height="90"
+                  alt={"Vista " + (i + 1) + " de " + nft.name}
+                  width="100"
+                  height="100"
                 />
               </button>
             ))}
@@ -702,89 +719,122 @@ export function DetailPage() {
           </div>
         </div>
         <div className="detail-info">
-          <p className="eyebrow">
-            {nft.collection} <span className="verified">✦ Curadoria Kurio</span>
-          </p>
           <h1>{nft.name}</h1>
           <p className="detail-price">{eth(edition.price)}</p>
           <p className="rating">
-            ★★★★★ <span>Obra selecionada pela nossa curadoria</span>
+            <span aria-hidden="true">★★★★★</span> Curadoria Kurio
           </p>
-          <hr />
-          <h2>Sobre este NFT</h2>
-          <p>{nft.description}</p>
-          <p className="muted">
-            Criado por <strong>{nft.creator}</strong>
-          </p>
-          <label className="field">
-            Edição
-            <select
-              aria-label="Edição"
-              value={editionId}
-              onChange={(e) => {
-                setEdition(e.target.value);
-                setQuantity(1);
-              }}
-            >
-              {nft.editions.map((e) => (
-                <option value={e.id} key={e.id} disabled={!e.stock}>
-                  {e.name} · {e.stock ? `${e.stock} disponíveis` : "Esgotada"}
-                </option>
+          <div className="detail-overview">
+            <h2>Sobre este NFT:</h2>
+            <p className="detail-overview-desktop">{nft.description}</p>
+            <p className="detail-overview-mobile">
+              Um colecionável digital da coleção {nft.collection}, criado por{" "}
+              {nft.creator}, na Ethereum.
+            </p>
+          </div>
+          <fieldset className="detail-editions">
+            <legend>Edição:</legend>
+            <div className="edition-options">
+              {nft.editions.map((option) => (
+                <label key={option.id}>
+                  <input
+                    type="radio"
+                    name="edition"
+                    value={option.id}
+                    checked={edition.id === option.id}
+                    disabled={!option.stock}
+                    onChange={() => {
+                      setEdition(option.id);
+                      setQuantity(1);
+                    }}
+                    aria-label={
+                      (option.id === "standard"
+                        ? "Padrão"
+                        : option.id === "rare"
+                          ? "Rara"
+                          : option.name) +
+                      " · " +
+                      (option.stock
+                        ? option.stock + " disponíveis"
+                        : "Esgotada")
+                    }
+                  />
+                  <span>
+                    {option.id === "standard"
+                      ? "Padrão"
+                      : option.id === "rare"
+                        ? "Rara"
+                        : option.name}
+                  </span>
+                </label>
               ))}
-            </select>
-          </label>
-          <div className="purchase-row">
+            </div>
+          </fieldset>
+          <div className="detail-quantity">
+            <span>Qtd.</span>
             <Quantity
               value={quantity}
               max={edition.stock}
               onChange={setQuantity}
               disabled={!edition.stock}
             />
-            <Button
-              disabled={add.isPending || !edition.stock}
-              onClick={() => add.mutate()}
-            >
-              {add.isPending
-                ? "Adicionando…"
-                : edition.stock
-                  ? "Adicionar ao carrinho"
-                  : "Edição esgotada"}
-            </Button>
+          </div>
+          <Button
+            className="detail-buy"
+            disabled={add.isPending || !edition.stock}
+            onClick={() => add.mutate()}
+          >
+            {add.isPending
+              ? "Adicionando…"
+              : edition.stock
+                ? "Comprar NFT"
+                : "Edição esgotada"}
+          </Button>
+          <div className="detail-favorite">
             <Favorite id={id} />
           </div>
-          <p role="status">{notice}</p>
-          {add.isError && (
-            <p role="alert" className="field-error">
-              {err(add.error)}
-            </p>
-          )}
-          <p className="muted fine-print">
-            Propriedade digital verificável. Transação demonstrativa, sem
-            movimentação de valores reais.
-          </p>
+          <Link className="detail-cart" to="/cart" aria-label="Abrir carrinho">
+            <ShoppingCart size={24} />
+          </Link>
           <dl className="detail-facts">
-            <dt>Rede</dt>
-            <dd>Ethereum</dd>
-            <dt>Padrão</dt>
-            <dd>ERC-721 / ERC-1155</dd>
-            <dt>Autenticidade</dt>
-            <dd>Curadoria independente ✦</dd>
+            <div>
+              <dt>ID do token:</dt>
+              <dd>
+                #{(nft.name.match(/#(\d+)/)?.[1] ?? nft.id).padStart(4, "0")}
+              </dd>
+            </div>
+            <div>
+              <dt>Coleção:</dt>
+              <dd>{nft.collection}</dd>
+            </div>
+            <div>
+              <dt>Rede:</dt>
+              <dd>Ethereum</dd>
+            </div>
           </dl>
+          <div className="detail-feedback">
+            <p role="status">{notice}</p>
+            {add.isError && (
+              <p role="alert" className="field-error">
+                {err(add.error)}
+              </p>
+            )}
+          </div>
         </div>
       </section>
       <section className="detail-description">
         <h2>Detalhes do NFT</h2>
         <p>
-          {nft.name} é uma edição limitada da coleção {nft.collection}. Cada
-          obra é um registro visual de um universo em constante transformação.
+          {nft.name} é uma edição limitada da coleção {nft.collection}.{" "}
+          {nft.description}
         </p>
         <p>
-          A propriedade inclui a arte e sua história. Explore, colecione e apoie
-          a próxima geração de criadores.
+          Criado por {nft.creator}. A propriedade inclui a arte e sua história.
+          Explore, colecione e apoie a próxima geração de criadores.
         </p>
         <p className="muted">
-          Rede: Ethereum · Contrato e direitos de propriedade simulados para
-          esta demonstração.
+          Rede: Ethereum · Contrato, propriedade e direitos simulados nesta
+          demonstração, sem movimentação de valores reais.
         </p>
       </section>
       <Related />

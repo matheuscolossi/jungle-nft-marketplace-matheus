@@ -77,10 +77,12 @@ function Header() {
           aria-label="Pesquisar obras"
           onClick={() => {
             const focusSearch = () =>
-              document
-                .querySelector<HTMLInputElement>(
+              Array.from(
+                document.querySelectorAll<HTMLInputElement>(
                   'input[aria-label="Buscar NFTs"]',
-                )
+                ),
+              )
+                .find((input) => input.getClientRects().length > 0)
                 ?.focus();
             if (location.pathname === "/") focusSearch();
             else
@@ -473,7 +475,7 @@ function Root() {
   }, [location.pathname, location.hash]);
   return (
     <div
-      className={`site${["/login", "/register"].includes(location.pathname) ? " site-auth" : ""}${location.pathname.startsWith("/order/") ? " site-order" : ""}${["/cart", "/checkout"].includes(location.pathname) || location.pathname.startsWith("/nft/") ? " site-market-flow" : ""}`}
+      className={`site${location.pathname.startsWith("/nft/") ? " site-detail" : ""}${["/login", "/register"].includes(location.pathname) ? " site-auth" : ""}${location.pathname.startsWith("/order/") ? " site-order" : ""}${["/cart", "/checkout"].includes(location.pathname) || location.pathname.startsWith("/nft/") ? " site-market-flow" : ""}`}
     >
       <Header />
       {notice && (

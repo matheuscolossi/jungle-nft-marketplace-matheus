@@ -34,7 +34,7 @@ test("Socket.IO price change updates checkout and requires a new review", async 
   await page.getByRole("button", { name: "Confirmar compra" }).click();
   await expect(
     page.getByRole("heading", {
-      name: "A arte agora faz parte da sua história.",
+      name: "Seus NFTs agora estão na sua carteira",
     }),
   ).toBeVisible();
   await expect(page.locator(".receipt .grand-total dd")).toHaveText(
@@ -59,7 +59,7 @@ test("Socket.IO stock exhaustion prevents a stale purchase and preserves the car
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "A arte agora faz parte da sua história.",
+      name: "Seus NFTs agora estão na sua carteira",
     }),
   ).toHaveCount(0);
   expect((await mockRequest<Order[]>(page, "/orders")).data).toHaveLength(0);
@@ -111,7 +111,7 @@ test("pending order survives disconnect, refresh and reconnect without duplicati
   await demo(page, { action: "reconnect" });
   await expect(
     page.getByRole("heading", {
-      name: "A arte agora faz parte da sua história.",
+      name: "Seus NFTs agora estão na sua carteira",
     }),
   ).toBeVisible();
   expect(new URL(page.url()).pathname).toBe(path);
@@ -119,7 +119,7 @@ test("pending order survives disconnect, refresh and reconnect without duplicati
   await demo(page, { action: "replay-event", old: true });
   await expect(
     page.getByRole("heading", {
-      name: "A arte agora faz parte da sua história.",
+      name: "Seus NFTs agora estão na sua carteira",
     }),
   ).toBeVisible();
 });

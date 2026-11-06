@@ -65,18 +65,14 @@ export async function addFirstNft(page: Page) {
       .getByRole("heading", { name: "Emerald Ape #042", exact: true })
       .first(),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Adicionar ao carrinho", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Comprar NFT", exact: true }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(page.getByTestId("cart-item")).toHaveCount(1);
 }
 
 export async function checkout(page: Page) {
   await login(page, "/nft/1");
-  await page
-    .getByRole("button", { name: "Adicionar ao carrinho", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Comprar NFT", exact: true }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(page.locator(".summary .grand-total dd")).not.toHaveText("—");
   await page.getByRole("link", { name: "Continuar para pagamento" }).click();

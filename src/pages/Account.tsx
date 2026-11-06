@@ -239,33 +239,33 @@ export function AuthPage({ mode }: { mode?: "login" | "register" }) {
             className="account-form auth-form"
           >
             {register && (
-              <Field
-                label="Nome"
-                name="name"
-                placeholder="Nome de exibição"
-                autoComplete="name"
-                required
-                value={form.name}
-                onChange={(event) => set("name", event.target.value)}
-                error={errors.name}
-                maxLength={80}
-              />
-            )}
-            {register && (
-              <Field
-                label="Nome de usuário"
-                name="username"
-                placeholder="Nome de usuário"
-                autoComplete="username"
-                required
-                value={form.username}
-                onChange={(event) => set("username", event.target.value)}
-                error={errors.username}
-                minLength={3}
-                maxLength={30}
-                autoCapitalize="none"
-                spellCheck={false}
-              />
+              <div className="auth-identity-fields">
+                <Field
+                  label="Nome"
+                  name="name"
+                  placeholder="Nome de exibição"
+                  autoComplete="name"
+                  required
+                  value={form.name}
+                  onChange={(event) => set("name", event.target.value)}
+                  error={errors.name}
+                  maxLength={80}
+                />
+                <Field
+                  label="Nome de usuário"
+                  name="username"
+                  placeholder="Nome de usuário"
+                  autoComplete="username"
+                  required
+                  value={form.username}
+                  onChange={(event) => set("username", event.target.value)}
+                  error={errors.username}
+                  minLength={3}
+                  maxLength={30}
+                  autoCapitalize="none"
+                  spellCheck={false}
+                />
+              </div>
             )}
             <Field
               label="E-mail"
