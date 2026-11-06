@@ -2,7 +2,6 @@ node_modules/
 dist/
 .env
 .env.local
-.openai/.local/
 playwright-report/
 test-results/
 *.log
@@ -10,5 +9,4 @@ reports/test-results/
 reports/playwright/data/
 reports/playwright/trace/
 *.tsbuildinfo
-.openai/site-artifact.tar.gz
 reports/visual-checks/

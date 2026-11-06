@@ -10,7 +10,6 @@ export default ts.config(
       "reports/**",
       "playwright-report/**",
       "test-results/**",
-      ".openai/**",
     ],
   },
   js.configs.recommended,
