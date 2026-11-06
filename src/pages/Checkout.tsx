@@ -776,7 +776,9 @@ export function CheckoutPage() {
             className="dialog-content"
             onCloseAutoFocus={(event) => {
               event.preventDefault();
-              const invalid = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+              const invalid = formRef.current?.querySelector<HTMLElement>(
+                '[aria-invalid="true"]',
+              );
               (invalid ?? reviewButton.current)?.focus();
             }}
           >

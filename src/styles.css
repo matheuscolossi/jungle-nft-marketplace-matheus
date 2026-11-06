@@ -428,6 +428,7 @@ input:invalid:not(:placeholder-shown):focus {
 .search-box {
   position: relative;
   flex: 1;
+  min-width: 0;
 }
 .search-box svg {
   position: absolute;
@@ -1255,7 +1256,7 @@ input:invalid:not(:placeholder-shown):focus {
   transform: translate(-50%, -50%);
   width: calc(100% - 36px);
   max-width: 520px;
-  max-height: 88dvh;
+  max-height: 88%;
   overflow-y: auto;
   background: #291b14;
   padding: 30px;
@@ -2192,7 +2193,7 @@ input:invalid:not(:placeholder-shown):focus {
   }
   .dialog-content {
     padding: 25px 20px;
-    max-height: 90dvh;
+    max-height: 90%;
   }
   .dialog-content > h2 {
     font-size: 19px;
@@ -2606,5 +2607,94 @@ main {
 @container viewport (max-width: 600px) {
   .detail-loading {
     min-height: 1850px;
+  }
+}
+
+/* A largura do conteúdo também diminui quando o usuário amplia a página. */
+@container viewport (max-width: 340px) {
+  .search-box {
+    min-width: 0;
+  }
+  .header-actions {
+    flex-wrap: wrap;
+  }
+  .catalog-toolbar,
+  .nft-grid,
+  .related-grid,
+  .benefits,
+  .footer-links,
+  .account-sidebar nav,
+  .review-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sort-label {
+    flex-wrap: wrap;
+  }
+  .purchase-row {
+    flex-wrap: wrap;
+  }
+  .purchase-row > .btn:not(.btn-icon) {
+    flex-basis: 100%;
+  }
+  .coupon-input {
+    flex-wrap: wrap;
+  }
+  .coupon-input > input {
+    flex-basis: 100%;
+  }
+  .cart-item {
+    grid-template-columns: 36px minmax(0, 1fr) 24px;
+    gap: 4px;
+    padding: 16px 0;
+  }
+  .cart-art {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+  }
+  .cart-art img {
+    width: 36px;
+    height: 36px;
+  }
+  .cart-item > .cart-name {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .cart-item > .cart-unit {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .cart-item > .quantity {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .cart-item > .cart-line-total {
+    grid-column: 2;
+    grid-row: 4;
+  }
+  .cart-item > .btn {
+    grid-column: 3;
+    grid-row: 1 / span 4;
+    width: 24px;
+    min-width: 24px;
+    padding: 4px;
+  }
+  .checkout-items > div,
+  .receipt-item {
+    flex-wrap: wrap;
+  }
+  .account-layout .wallet-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .account-layout .wallet-card > .btn {
+    grid-column: 1;
+  }
+  .totals > div {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .totals dd {
+    margin-left: auto;
+    max-width: 100%;
+    white-space: normal;
   }
 }
