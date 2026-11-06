@@ -1,0 +1,67 @@
+Public HTTP checks, without cookies or Authorization headers.
+Command: curl.exe --head https://jungle-nft-marketplace-matheus.vercel.app/ https://jungle-nft-marketplace-matheus.vercel.app/nft/1 https://jungle-nft-marketplace-matheus.vercel.app/checkout https://jungle-nft-marketplace-matheus.vercel.app/mockServiceWorker.js
+Responses in that order:
+
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Age: 9371
+Cache-Control: public, max-age=0, must-revalidate
+Content-Disposition: inline
+Content-Length: 1261
+Content-Type: text/html; charset=utf-8
+Date: Fri, 06 Nov 2026 17:36:59 GMT
+Etag: "826f88c13eab943ed41eb40c5c2eeafb"
+Last-Modified: Fri, 06 Nov 2026 15:00:48 GMT
+Server: Vercel
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Vercel-Cache: HIT
+X-Vercel-Id: gru1::7hklx-1793986619870-d7685d5c7e25
+
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Age: 14900
+Cache-Control: public, max-age=0, must-revalidate
+Content-Disposition: inline; filename="index.html"
+Content-Length: 1261
+Content-Type: text/html; charset=utf-8
+Date: Fri, 06 Nov 2026 17:36:59 GMT
+Etag: "826f88c13eab943ed41eb40c5c2eeafb"
+Last-Modified: Fri, 06 Nov 2026 13:28:39 GMT
+Server: Vercel
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Vercel-Cache: HIT
+X-Vercel-Id: gru1::z5wrp-1793986619974-03d02b56bc11
+
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Age: 14900
+Cache-Control: public, max-age=0, must-revalidate
+Content-Disposition: inline; filename="index.html"
+Content-Length: 1261
+Content-Type: text/html; charset=utf-8
+Date: Fri, 06 Nov 2026 17:37:00 GMT
+Etag: "826f88c13eab943ed41eb40c5c2eeafb"
+Last-Modified: Fri, 06 Nov 2026 13:28:39 GMT
+Server: Vercel
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Vercel-Cache: HIT
+X-Vercel-Id: gru1::d2tf5-1793986620042-bb9f61c0a73d
+
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Age: 16105
+Cache-Control: no-cache
+Content-Disposition: inline; filename="mockServiceWorker.js"
+Content-Length: 9666
+Content-Type: application/javascript; charset=utf-8
+Date: Fri, 06 Nov 2026 17:37:00 GMT
+Etag: "c8f0dfa140ec246071c4cc5a03df5c9d"
+Last-Modified: Fri, 06 Nov 2026 13:08:34 GMT
+Server: Vercel
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Vercel-Cache: HIT
+X-Vercel-Id: gru1::cgj64-1793986620121-6c3b7d67f5e0

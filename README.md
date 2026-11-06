@@ -120,6 +120,10 @@ A revisão aplica a composição de início, detalhe, autenticação, conta, car
 
 Algumas interações exigem adaptações: busca visível no catálogo, quatro categorias reais com filtro de coleção e indicação da rede Ethereum das fixtures. Não há facetas que aparentem filtrar redes inexistentes. Ações editoriais, sociais e de suporte fora do escopo indicam indisponibilidade, sem simular sucesso externo. A revisão e os baselines não constituem certificação de igualdade pixel a pixel; diferenças conhecidas e pendências estão em [docs/REQUIREMENTS-AUDIT.md](docs/REQUIREMENTS-AUDIT.md).
 
+## Conferência independente
+
+A suíte completa no domínio público concluiu **86 testes aprovados, quatro skips intencionais e zero falhas em 6,0 minutos**, sem atualizar baselines. O acesso anônimo passou. A comparação direta com seis frames da cópia do Figma encontrou diferenças de composição, especialmente no detalhe mobile e na confirmação; a fidelidade visual ainda tem pendências. O arquivo original e os outros frames ficaram inacessíveis nesta rodada. Veja [a comparação e suas evidências](docs/FIGMA-COMPARISON.md).
+
 ## Publicação
 
 `npm run build` produz `dist/`. O host deve servir `index.html` para rotas não correspondentes a arquivos, preservando `/mockServiceWorker.js` e os assets; isso permite abrir ou atualizar `/nft/1`, `/cart`, `/checkout` e páginas da conta diretamente. Os mocks também devem permanecer habilitados no build publicado.

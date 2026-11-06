@@ -95,7 +95,7 @@ The [GitHub Actions run](https://github.com/matheuscolossi/jungle-nft-marketplac
 
 Production URL: [https://jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app). Vercel reported READY for production deployment `dpl_BFsnJ8BJn2PpXuRbUzJBXFys5NEK`, source `4e647fef4cc76ddc875a589c30e6e1621fbea5ca`. Anonymous HTTP requests returned 200 for home, `/nft/1`, `/checkout` and the MSW worker; the worker retained JavaScript content type and no-cache.
 
-The public E2E run passed 84 tests with four intentional skips in 4.9 minutes. Two recovery checks failed because the test called browser fetch immediately after reload, before MSW initialization completed. The test now waits for the confirmed receipt to reappear before querying orders. Both desktop/mobile recovery tests passed on targeted rerun in 18.3 seconds. No application code changed. All eight visual comparisons passed without snapshot updates. The local HTML report above remains the clean local run; public list-reporter evidence is [reports/production-validation.txt](../reports/production-validation.txt).
+The public E2E run passed 84 tests with four intentional skips in 4.9 minutes. Two recovery checks failed because the test called browser fetch immediately after reload, before MSW initialization completed. The test now waits for the confirmed receipt to reappear before querying orders. Both desktop/mobile recovery tests passed on targeted rerun in 18.3 seconds. No application code changed. All eight visual comparisons passed without snapshot updates. That first public run is retained in [reports/production-validation.txt](../reports/production-validation.txt). The HTML report now corresponds to the later complete public run below.
 
 Commands used against production:
 
@@ -114,3 +114,11 @@ These records describe earlier code and do not certify the final reviewed applic
 - **2026-11-06, first complete Figma revision:** 86 passed, four intentional skips, 4.8 minutes, without updates. The current performance bootstrap and mobile promo corrections were applied afterward, requiring the current final run above.
 
 Historical HTML reports can be replaced by later executions. Current checked-in reports must be read with their corresponding source and date.
+
+## Complete public rerun and independent visual review
+
+On 2026-11-06, the full suite was rerun against https://jungle-nft-marketplace-matheus.vercel.app from source ca1cf55: **86 passed, four intentional skips, zero failures, 6.0 minutes**, with no retries or snapshot updates. This supersedes the earlier partial public run. The current reports/playwright/index.html is the complete public report; the command and list output are in [production-final-validation.txt](../reports/production-final-validation.txt).
+
+Anonymous access was confirmed with an empty fresh-context cookie list and HTTP 200 responses without authentication headers or cookies for home, detail, checkout and the JavaScript worker. See [capture metadata](../reports/design-comparison/capture-evidence.json) and [HTTP responses](../reports/public-access-final.txt).
+
+Visual fidelity is not fully approved: six exported frames from the supplied Figma copy were compared directly with fresh captures, with significant differences in mobile detail and receipt composition. The original file remained inaccessible and Figma call limits prevented the other nine exports. This does not certify original/copy equivalence. Findings and source limitations are in [FIGMA-COMPARISON.md](FIGMA-COMPARISON.md). No application code was changed in this review.

@@ -1,0 +1,65 @@
+[
+  {
+    "anonymousCookiesBeforeNavigation": []
+  },
+  {
+    "name": "home",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/?q=&category=&collection=&sort=featured&page=1&available=false&minPrice=&maxPrice=",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "title": "Arte digital para colecionar — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "detail",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/nft/1",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "title": "Detalhes da obra — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "login",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/login?redirect=%2F",
+    "viewport": {
+      "width": 1440,
+      "height": 1981
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "receipt",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/order/order-3",
+    "viewport": {
+      "width": 1440,
+      "height": 1657
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "detail-mobile",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/nft/1",
+    "viewport": {
+      "width": 414,
+      "height": 896
+    },
+    "title": "Detalhes da obra — KURIO",
+    "bodyWidth": 414
+  },
+  {
+    "name": "register-mobile",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/register?redirect=%2F",
+    "viewport": {
+      "width": 414,
+      "height": 896
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 414
+  }
+]
