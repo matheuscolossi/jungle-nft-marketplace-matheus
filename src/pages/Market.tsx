@@ -662,7 +662,7 @@ export function DetailPage() {
   });
   if (result.isPending)
     return (
-      <div className="detail-loading">
+      <div className="detail-loading" key="detail-loading">
         <div className="detail-grid">
           <Skeleton detail />
           <Skeleton detail />
@@ -680,7 +680,7 @@ export function DetailPage() {
   const nft = result.data,
     edition = nft.editions.find((e) => e.id === editionId) ?? nft.editions[0];
   return (
-    <div className="nft-detail-page">
+    <div className="nft-detail-page" key="detail-content">
       <Link className="detail-back" to="/" aria-label="Voltar ao mercado">
         <ArrowLeft size={20} />
       </Link>

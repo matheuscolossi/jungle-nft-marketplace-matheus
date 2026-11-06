@@ -854,6 +854,7 @@
 
 .nft-detail-page {
   position: relative;
+  display: flow-root;
 }
 .detail-back,
 .detail-cart,
