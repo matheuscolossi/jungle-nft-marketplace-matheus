@@ -1,42 +1,43 @@
-# Comparação independente com a referência visual
+# Revisão visual e correções
 
-Data: 6 de novembro de 2026. Aplicação examinada: ca1cf55346cc25f6f8d8d0b6492de896ee1cd4d2, publicada em https://jungle-nft-marketplace-matheus.vercel.app. Nenhum código da aplicação foi alterado nesta revisão.
+Referência: [cópia do Figma fornecida para o desafio](https://www.figma.com/design/8OMEkRvebRuOLP9QeIJLf1/Frontend-Challenge--Copy-). Revisão de 6 de novembro de 2026.
 
-## Resultado das três verificações
+## Correções implementadas
 
-| Verificação | Resultado | Evidência |
-| --- | --- | --- |
-| Acesso anônimo | Aprovado | Novo contexto Chrome sem cookies nem storageState; início e detalhe renderizados. HTTP sem Authorization/cookies retornou 200 no início, /nft/1, /checkout e worker JavaScript. |
-| Suíte completa no domínio publicado | Aprovada | 86 testes aprovados, quatro skips intencionais, zero falhas; 6,0 minutos. Sem retries nem atualização de baselines. HTML em reports/playwright/index.html. |
-| Comparação com o Figma original | Incompleta; fidelidade visual não aprovada na amostra acessível | O original não pôde ser lido. Seis frames da cópia fornecida foram comparados com capturas novas e revelaram diferenças estruturais. |
+O código de aplicação desta revisão é 5729059. A revisão anterior, ca1cf55, encontrou seis diferenças de composição. Elas foram tratadas sem alterar os contratos REST, a persistência, o cálculo em wei ou as regras de compra.
 
-A aprovação funcional não comprova fidelidade ao Figma. Esta revisão não usa as próprias baselines como fonte visual. Não se declara correspondência pixel a pixel nem pontuação de avaliação.
+| Área | Alteração e verificação |
+| --- | --- |
+| Detalhe mobile | Imagem imersiva, retorno/favorito no topo, ficha sobreposta e compra na primeira tela. O botão tem verificação de posição no viewport mobile. A galeria e as informações adicionais continuam acessíveis abaixo da ficha. |
+| Detalhe desktop | Título/preço/descrição reorganizados, edições em opções de rádio e ações ao lado da quantidade. Edições esgotadas continuam indisponíveis; seleção e estoque vêm da API. |
+| Recibo | Faixa horizontal de transação/data/total/carteira e tabela dos itens do snapshot. Dados completos do colecionador ficam em uma seção expansível. O botão de transação abre uma explicação local da referência simulada, com foco controlado. |
+| Início | Enquadramento do hero ajustado. Busca visível na lateral em desktop e na barra do catálogo em mobile. Espaços da grade e dimensões do rodapé alinhados aos contextos. A altura desktop passou de 3879 para 3701 px; o frame tem 3668 px. A diferença residual inclui conteúdo funcional e dados variáveis. |
+| Cadastro | Nome e nome de usuário dividem a primeira linha, preservando ambos os campos exigidos pelo contrato. Link de entrada e botão cabem no mobile; alturas menores recebem espaçamento reduzido. O modal desktop usa os 500×656 px do contexto. |
+| Login | Tipografia dos tabs e descrição ajustadas; catálogo completo ao fundo, sem o corte anterior em 1220 px. Foco visível e provedores externos indisponíveis são preservados. |
+| Carregamento | Conta/pagamento carregados sob demanda. Estados de skeleton e conteúdo possuem identidades distintas e um bloco de formatação estável, evitando reaproveitar elementos em posições diferentes. O CLS final medido foi zero nos quatro grupos Lighthouse. |
 
-## Método e limitações
+## Evidências
 
-- Original solicitado: [Frontend Challenge](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1). A integração retornou falta de acesso de edição; a leitura web também falhou. O navegador integrado falhou ao inicializar os recursos. A tentativa pelo navegador Windows foi encerrada pelo Computer Use porque ele não conseguiu determinar a URL atual com confiança para aplicar sua política. Não foram feitos novos inputs nesse navegador.
-- Fonte visual efetivamente disponível: [cópia fornecida pelo usuário](https://www.figma.com/design/8OMEkRvebRuOLP9QeIJLf1/Frontend-Challenge--Copy-). Não foi possível verificar que ela permanece idêntica ao original.
-- Foram obtidas seis exportações nativas. O plano Starter do Figma atingiu o limite de chamadas, impedindo exportar os nove frames restantes. Não se considera cobertura integral das telas.
-- As capturas publicadas são de contextos novos Chrome, sem sessão da Vercel, com fontes/imagens prontas, consultas secundárias concluídas e movimento reduzido. Dados de compra são fictícios e locais ao contexto; não há blockchain ou pagamento real.
-- Largura de 1440 px nos quatro frames desktop e 414 px nos dois mobile, correspondendo às referências exportadas. Início/detalhe desktop usam página completa; os outros pares usam a altura exata do frame. Não houve redimensionamento nem edição dos PNG. Preços, contagens, usuário, itens e estado de foco não são diferenças estruturais.
-- As oito baselines existentes verificam regressão da implementação e passaram nesta execução; não foram usadas para aprovar equivalência ao design.
+- [Comparação Figma × versão corrigida](../reports/design-corrections/index.html), com acesso também às capturas anteriores.
+- [Auditoria anterior e seus seis pares](../reports/design-comparison/index.html).
+- [Capturas das nove telas desktop e dois frames mobile](../reports/design-corrections/capture-evidence.json).
+- [Relatórios Lighthouse](../reports/lighthouse/README.md).
+- Resultados funcionais e condições em [VALIDATION.md](VALIDATION.md).
 
-## Achados
+A suíte verifica a compra por teclado, opções esgotadas, estoque por edição, snapshot, abertura dos dados do pedido, foco do diálogo de transação e retorno após fechá-lo. As oito baselines foram regeneradas depois da revisão visual; a verificação final as compara sem atualizá-las.
 
-| Prioridade | Tela / frame da cópia | Comparação observada | Encaminhamento |
-| --- | --- | --- | --- |
-| Alta | Detalhe mobile, 15:5536, 414×896 | Referência: retorno/favorito sobre imagem imersiva; título, edições, quantidade e compra cabem na primeira tela. Publicação: cabeçalho, breadcrumb, imagem com moldura, miniaturas e descrição alongam o fluxo; compra fica abaixo da primeira tela. | Reproduzir composição mobile e visibilidade da área de compra, preservando controles e validações. |
-| Média | Confirmação, 11:4385, 1440×1657 | A referência apresenta faixa horizontal com transação/data/total/carteira e tabela de itens. A publicação usa uma lista vertical longa de metadados e outro agrupamento dos totais. Ícone, cartão central e faixa de base são próximos. | Reorganizar o snapshot na composição do frame, mantendo dados obrigatórios e indicação de simulação. |
-| Média | Detalhe desktop, 10:244, 1440×2246 | Duas colunas e galeria existem, mas seletor de edição substitui chips; título, descrição, ações e metadados mudam de posição. Altura publicada 2343 px. Conteúdo da API é diferente por definição. | Alinhar hierarquia, controles e espaçamento, sem fixar dados do frame no lugar da API. |
-| Média | Início, 2:2, 1440×3668 | Mesma família visual e sequência de hero/catálogo/promoções/diário/rodapé. Enquadramento da arte do hero diferente; altura publicada 3879 px. Busca/filtros reais explicam parte das mudanças, mas não toda equivalência visual. | Corrigir enquadramento e revisar espaços; manter adaptações funcionais documentadas. |
-| Média | Cadastro mobile, 16:1228, 414×896 | Cor/fonte e eixo central próximos. Campo adicional de nome, texto do botão e espaços aumentam a altura; link para entrar sai da primeira tela. | Ajustar composição com os campos obrigatórios, documentando a diferença necessária de conteúdo. |
-| Baixa | Login desktop, 9:115, 1440×1981 | Posição e dimensões gerais do modal próximas. Fundo, tipografia, texto e estado de foco diferem. Indicadores de foco e provedores desabilitados são adaptações de acessibilidade/escopo. | Afinar tipografia e fundo; preservar foco e comunicação honesta dos provedores. |
+## Adaptações mantidas
 
-## Evidências para revisão
+- Preços, nomes, estoque, quantidade de imagens, edições, itens comprados e datas são dados da API, não números fixos dos frames.
+- Não se exibem quatro edições ou avaliações fictícias quando as fixtures não as fornecem. As opções reais são Padrão/Rara; a indicação de curadoria não inventa uma nota de colecionadores.
+- A busca, os filtros reais, o campo adicional de nome e a explicação de compra simulada permanecem funcionais.
+- Campos de conta e de recibo exigidos pelo enunciado continuam disponíveis. A confirmação usa somente dados preservados no pedido.
+- Nenhuma ação representa pagamento, transferência blockchain ou autenticação social real.
 
-- [Galeria lado a lado dos seis pares](../reports/design-comparison/index.html), com PNGs em resolução nativa e links para os frames efetivamente lidos.
-- [Registro das capturas e contexto inicial sem cookies](../reports/design-comparison/capture-evidence.json).
-- [Suíte completa pública](../reports/production-final-validation.txt) e [relatório HTML](../reports/playwright/index.html).
-- [Respostas HTTP públicas sem credenciais](../reports/public-access-final.txt).
+## Limites da comparação
 
-Para completar o confronto com o original e a cobertura dos nove frames restantes, é necessária uma exportação PNG/PDF dos frames originais ou acesso de leitura funcional por uma ferramenta disponível. Não é necessário presumir aprovação enquanto essas referências faltam. As correções visuais acima não foram realizadas: esta etapa foi uma verificação.
+O [arquivo original](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1) permaneceu indisponível para leitura. Os contextos salvos de nove telas desktop e a árvore das telas mobile foram consultados; seis exportações nativas da cópia permitiram comparação direta. O limite do plano impediu novas exportações.
+
+As outras capturas são revisão da interface e dos contextos salvos, sem alegar confronto direto com PNGs originais ausentes. Não foi possível comprovar que a cópia permanece idêntica ao original. Por isso, esta revisão resolve os achados observados e registra as adaptações, sem certificar igualdade integral de todos os frames ou uma pontuação no processo seletivo.
+
+As imagens da referência não foram editadas nem usadas como imagem de página na implementação. Cada par usa a mesma largura CSS; início/detalhe desktop são capturas de página completa, enquanto os demais pares usam a altura do frame. Os PNGs mantêm sua resolução original.

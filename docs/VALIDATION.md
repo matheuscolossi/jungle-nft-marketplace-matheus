@@ -1,20 +1,14 @@
-# Reproducible validation
+# Validação reproduzível
 
-## Current review — 2026-11-06
+## Revisão atual — 6 de novembro de 2026
 
-The application source under review is commit `b3027e733ca8ab4c1833d419d0b6ef58a9505e48`. It includes the original Figma artwork, SVGs, local Roboto Mono, revised screen compositions, complete account/checkout fields and performance corrections. Documentation and generated reports are recorded after that application commit.
+Código de aplicação: `5729059`. A revisão corrige os achados visuais de detalhe, recibo, início e autenticação, preservando os contratos e os snapshots. Conta e pagamento carregam sob demanda; skeleton e conteúdo possuem identidades distintas para evitar deslocamentos durante o carregamento.
 
-The suite lists **90 entries: 86 executions and four intentional skips**. The duplicate mobile entries for the four layout sweeps are skipped because those cases already set explicit widths in the desktop project. The local production preview is `http://127.0.0.1:4180`, selected with `E2E_BASE_URL`.
+Tipos, lint e build de produção passaram. A execução completa contra o preview otimizado `http://127.0.0.1:4181` terminou com **86 testes aprovados, quatro skips intencionais e zero falhas em 4,9 minutos**, sem atualizar snapshots. As oito referências visuais corresponderam. Os quatro skips são as entradas mobile duplicadas das varreduras que já definem explicitamente a largura no projeto desktop.
 
-The final complete run passed **86 tests with four intentional skips in 4.6 minutes**, without snapshot updates. All eight visual references matched.
+A geração de referências, realizada antes da verificação final, concluiu **4/4 cenários em 16,3 segundos**. Os oito baselines foram revisados; sete imagens mudaram e a referência mobile de pagamento permaneceu igual. A rodada direcionada de detalhe, cadastro e compra passou **6/6 em 21,5 segundos**. A execução completa posterior substitui esses checkpoints como evidência funcional da versão atual.
 
-All eight visual references were regenerated after the UI review. The dedicated baseline execution passed **4/4 scenarios in 14.6 seconds**, covering home, detail, cart and checkout in desktop/mobile. The final complete suite runs without snapshot updates and also compares those references. Baselines detect regressions against the implementation's own reviewed images; they do not certify pixel equality with Figma.
-
-Typecheck, lint and production build passed for the current application source. The [GitHub Actions run](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42211615877) passed types, lint, build and **86 tests with four intentional skips in 9.6 minutes**, without snapshot updates. It checked commit `98b3ebf`, whose only change after application commit `b3027e7` is the README.
-
-The twelve completed Lighthouse measurements meet every requested threshold by median. The table below records the current measurements; the individual home-mobile performance scores were 88, 91 and 90, giving a median of 90. No test browsers ran concurrently with this audit. Public deployment checks are recorded in the publication section below; Lighthouse results in this document remain local measurements.
-
-## Commands
+## Reproduzir
 
 ```sh
 npm ci
@@ -24,101 +18,78 @@ npm run build
 npm test
 ```
 
-Without `E2E_BASE_URL`, Playwright builds and starts an optimized preview on `http://127.0.0.1:4173`. With that variable set, it uses the existing preview without rebuilding. Rebuild after application source changes before verifying it. Chromium uses the installed Google Chrome channel; if absent, install it with `npx playwright install chrome`. The suite needs no private backend, extension, blockchain wallet or payment service.
+Sem `E2E_BASE_URL`, Playwright prepara o build e inicia o preview em `http://127.0.0.1:4173`. Com a variável definida, usa a origem existente e não recompila. É necessário reconstruir depois de alterar a aplicação. O navegador é o canal Google Chrome; se ausente, use `npx playwright install chrome`.
 
-The completed baseline command and the complete-suite command are:
+Comandos usados nesta revisão, com `E2E_BASE_URL=http://127.0.0.1:4181`:
 
 ```sh
 npx playwright test --grep=baselines --update-snapshots=all --workers=2 --reporter=list --output=reports/visual-checks/baseline-generation
-npx playwright test --workers=2
+npx playwright test --workers=2 --output=reports/visual-checks/corrected-final
 ```
 
-Use snapshot updates only after reviewing a visual change. Explicit `all` regenerates every reference; the default update mode can retain an older image when a small change stays within tolerance. Subsequent verification must omit updates.
+Atualize baselines somente depois de revisar a mudança visual. A execução final sempre omite atualizações. Os baselines detectam regressões da implementação; não certificam igualdade com o Figma.
 
-Each test gets an isolated browser context and mock database. Tests use normal fixtures. The pending-order reconnection scenario fixes Date with Playwright's clock while keeping network timers real. Fault/event controls use browser `fetch` requests intercepted by MSW's `/api/demo` handlers. Application requests use Axios; realtime scenarios use MSW WebSocket interception, the Socket.IO binding and the real `socket.io-client`. Tests do not call application setters or Query-cache methods.
+O [relatório HTML](../reports/playwright/index.html) é substituído por execuções posteriores. Traces e screenshots de falhas ficam em `reports/test-results/`; abra um trace com `npx playwright show-trace caminho/trace.zip`. A evidência textual local está em [visual-corrections-validation.txt](../reports/visual-corrections-validation.txt).
 
-The HTML report is [reports/playwright/index.html](../reports/playwright/index.html). Failure screenshots and retained traces are in `reports/test-results/`; open a retained trace with `npx playwright show-trace path/to/trace.zip`. Later executions replace the HTML report, so its current result must match the result being reported.
+## Cobertura
 
-## Coverage and layout checks
+Cada teste usa contexto de navegador e base simulada isolados. A interface e os controles de cenários atravessam os handlers MSW; a suíte não chama setters da aplicação nem métodos do cache. Eventos usam o cliente Socket.IO real e o binding MSW.
 
-The scenarios execute at **1440×1000** and **390×844** in Chrome, except for the intentionally deduplicated layout sweeps. Coverage includes:
+- Busca, filtros compostos, limites inclusivos, preços exibidos, popularidade, paginação, histórico/refresh, vazio, cancelamento e respostas fora de ordem.
+- Rotas diretas/inexistentes, galeria, seleção de edição, indisponibilidade, estoque agregado por edição, quantidades e queda de oito para duas unidades.
+- Cadastro, login, retorno à rota privada, sessão recuperada/expirada, logout e isolamento entre contas.
+- Favoritos otimistas com rollback, carrinho visitante/conta e merge, persistência, cupons e cálculo decimal preciso.
+- Colecionador e carteira, erros REST associados aos campos, primeiro erro em foco, conexão simulada e revisão da cotação.
+- Pagamento confirmado/recusado/pendente, cliques repetidos, perda da resposta, idempotência/conflito e permissão do pedido.
+- Snapshot imutável, remoção apenas das quantidades compradas, preservação de adições posteriores e carrinho após recusa.
+- Perfil, avatar/senha, carteiras, campos adicionais, validação e persistência; rascunho preservado durante refetch.
+- Expiração no checkout, retomada do rascunho, preço/estoque em tempo real, eventos duplicados/antigos, reconexão e estado terminal.
+- Migração de artes schema 2→3 preservando preços, estoque, sessão, carrinho, favoritos, cupom, idempotência e recibo anterior.
+- Skeletons, offline/retry, compra por teclado, diálogos/foco e carregamento das telas antes de medir layout.
+- Compra visível na primeira tela do detalhe mobile; entrada visível no cadastro mobile; expansão dos dados do recibo e diálogo da transação simulada com retorno do foco.
 
-- Search, composed filters, inclusive minimum/maximum prices, displayed-price sorting, popularity, pagination, URL/history/refresh restoration, empty results and out-of-order responses.
-- Direct NFT routes, missing routes/resources, gallery selection, sold-out editions, quantity limits, stock falling from eight to two, explicit removal at zero and availability across editions.
-- Registration validation/conflicts, invalid login, protected-route return, recovered/expired sessions, logout and account isolation.
-- Optimistic favorites with rollback/retry/persistence; visitor/account cart persistence and merge; quantities/removal; invalid, expired and valid coupons; precise decimal totals.
-- Collector validation, simulated wallet connection refusal/connect/disconnect, accessible REST errors, focus and purchase review.
-- Confirmed/refused/pending payments, repeated clicks, post-creation timeout recovery, idempotency payload conflicts and private order permissions.
-- Immutable receipt snapshots, removal of only bought quantities, preservation of later additions and cart preservation after refusal.
-- Profile, avatar upload/removal, password, primary/secondary wallets, extended fields, server validation and refresh persistence. Profile drafts survive background refresh and fields remain locked through saving.
-- Checkout session expiration and draft/cart resumption; Socket.IO price/stock updates, stale quote rejection, duplicate/old-event rejection, disconnected pending-order recovery and terminal-state preservation.
-- Schema 2→3 artwork migration with session, prices, stock, versions, cart, coupon, favorites, idempotent recovery and the original receipt snapshot preserved.
-- Slow catalog/detail/cart-summary skeletons, offline/transient failures, retry, dialog focus, keyboard-only purchase and focus while correcting errors.
+Perfis principais: **1440×1000** e **390×844**. As varreduras carregam as rotas e formulários em **768×1024** e aplicam **CSS zoom: 2** nas larguras 390, 768 e 1440 px. Isso verifica reflow com zoom CSS, não o menu de zoom do navegador. Asserções aguardam conteúdo, fontes e imagens visíveis antes de medir overflow. A compra por teclado usa Tab, digitação, Enter e Espaço, verificando foco visível.
 
-The keyboard-only purchase uses Tab, typing, Enter and Space from login through receipt. Visited controls must match `:focus-visible` with a visible outline or box shadow. Setup navigation and fault controls are separate from the keyboard interactions being checked.
+## Lighthouse
 
-Loaded-route sweeps check home, detail, populated cart, login, registration, profile, wallets with the dialog open, populated favorites, checkout/review and confirmed receipt at **768×1024**. Further sweeps use **CSS `zoom: 2` on the document root** at viewport widths 390, 768 and 1440 px in headless Chrome on Windows. This checks CSS zoom/reflow, not the browser-menu zoom. Assertions wait for route-specific content, fonts, visible images and loading indicators, then compare scroll width with viewport width. Explicit layout widths run once in the desktop project.
-
-Container queries use the effective content width under zoom; dialogs limit their height by the available percentage. The screenshot helper decodes visible images while on screen, restores scroll position and waits for fonts, avoiding hidden modal-backdrop images and slow-CI image cancellations. These synchronization steps preserve the actual overflow and image comparisons.
-
-The [Figma copy supplied for review](https://www.figma.com/design/8OMEkRvebRuOLP9QeIJLf1/Frontend-Challenge--Copy-) provides design contexts/screenshots for composition and assets. Required dynamic interactions use a visible catalog search, four real categories plus collections, and an Ethereum indication matching NFT fixtures. Social, editorial and support actions do not claim external success. Provenance, optimization and legacy assets are in [ASSETS.md](ASSETS.md).
-
-## Lighthouse — completed 2026-11-06
+Doze medições concluídas, três por página/perfil, no preview otimizado da aplicação normal. Não havia testes de navegador concorrentes. O comando saiu com sucesso e todos os arrays `belowTarget` estão vazios.
 
 ```sh
 npm run build
-npm run preview -- --host 127.0.0.1 --port 4173
-# In another terminal:
+npm run preview -- --port 4173
+# Em outro terminal:
 npm run audit
 ```
 
-For the current review, `AUDIT_BASE_URL=http://127.0.0.1:4180` selected the existing production preview. `scripts/audit.mjs` starts a fresh headless Chrome profile for each measurement with Lighthouse simulated throttling: `/` and `/nft/1`, three measurements per mobile/desktop profile, twelve reports total. Desktop uses 1440×1000, a 40 ms round trip, 10 Mbps throughput and no CPU slowdown; mobile uses Lighthouse defaults. Normal artwork, fonts, mocks and Socket.IO remain enabled, with no audit-specific application branch.
+Nesta revisão, `AUDIT_BASE_URL=http://127.0.0.1:4181` selecionou o preview existente. Cada medição usa um perfil Chrome novo e throttling simulado. Mobile usa os padrões Lighthouse; desktop usa 1440×1000, RTT de 40 ms, 10 Mbps e sem redução de CPU. Assets, mocks e Socket.IO permanecem ativos, sem comportamento especial de auditoria.
 
-| Route | Profile | Performance | Accessibility | Best practices | SEO | LCP ms | CLS | TBT ms |
+| Página | Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP ms | CLS | TBT ms |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| home | mobile | 90 | 100 | 100 | 100 | 3672 | 0.00000 | 39.5 |
-| home | desktop | 99 | 100 | 100 | 100 | 916 | 0.00000 | 0 |
-| detail | mobile | 90 | 100 | 100 | 100 | 3671 | 0.02275 | 47.5 |
-| detail | desktop | 99 | 100 | 100 | 100 | 883 | 0.01739 | 0 |
+| Início | Mobile | 90 | 100 | 100 | 100 | 3691 | 0 | 49 |
+| Início | Desktop | 99 | 100 | 100 | 100 | 943 | 0 | 0 |
+| Detalhe | Mobile | 91 | 100 | 100 | 100 | 3575 | 0 | 46 |
+| Detalhe | Desktop | 99 | 100 | 100 | 100 | 847 | 0 | 0 |
 
-All values are medians of three runs per cell. Targets are Performance ≥90, Accessibility ≥95, Best Practices ≥95 and SEO ≥90. The script exits with failure if a runtime error occurs or a category median falls below its target. All current `belowTarget` arrays are empty.
+Valores são medianas de três medições. Metas: performance ≥90, acessibilidade ≥95, boas práticas ≥95 e SEO ≥90. O script falha se a execução falhar ou uma mediana ficar abaixo da meta. Resultados individuais do início mobile: 90, 89 e 90; a meta é avaliada pela mediana, não por todas as execuções isoladas.
 
-Environment: Lighthouse **13.6.0**, Node **v24.22.1**, Windows **10.0.26300 x64**, Intel Core **i5-12450H**, **16 GB RAM**, HeadlessChrome **156.0.0.0**. Optional configuration: `AUDIT_BASE_URL`, `AUDIT_DETAIL_PATH`, `CHROME_PATH`; `AUDIT_RUNS` defaults to three. HTML/JSON reports retain browser versions, warnings, category scores and LCP/CLS/TBT. See the [summary](../reports/lighthouse/README.md) and [raw measurements](../reports/lighthouse/summary.json).
+Ambiente: Lighthouse 13.6.0, Node v24.22.1, Windows 10.0.26300 x64, Intel i5-12450H, 16 GB RAM, HeadlessChrome 156.0.0.0. Veja [resumo e relatórios](../reports/lighthouse/README.md) e [JSON completo](../reports/lighthouse/summary.json). Variáveis opcionais: `AUDIT_BASE_URL`, `AUDIT_DETAIL_PATH`, `AUDIT_RUNS` (padrão 3) e `CHROME_PATH`.
 
-The mobile median is at the performance threshold and simulated LCP is about 3.7 seconds. Results depend on CPU load, browser version and hosting/network conditions; this local audit does not certify published performance. The hero preload starts its request before React mounts. App-module loading overlaps worker initialization, while React and its first network calls still wait for the mocks to be ready. Heading order and mobile promo sizing were also corrected before this measurement.
+O início mobile está no limite de performance. CPU, navegador, rede e host podem mudar o resultado. Estas são medições locais, sem alegar auditoria Lighthouse do domínio público. Um deslocamento do detalhe identificado durante a revisão foi corrigido pela estabilidade do bloco e pelas identidades distintas do skeleton/conteúdo; o CLS final é zero nos quatro grupos.
 
-## CI and publication
+## Publicação e CI
 
-The Windows GitHub Actions workflow installs dependencies, checks types/lint, builds, installs Chrome and runs the complete Playwright suite with Node 22. Reports and traces are retained for 14 days. Windows matches the local baseline environment; another OS can rasterize text differently.
+Domínio de entrega: [jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app).
 
-The [GitHub Actions run](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42211615877) passed types, lint, build and **86 tests with four intentional skips in 9.6 minutes**, without snapshot updates. It checked commit `98b3ebf`, whose only change after application commit `b3027e7` is the README.
+A atualização pública e a CI desta revisão serão registradas aqui após a conclusão, separadas da aprovação local acima. A revisão pública anterior, `ca1cf55`, passou 86 testes com quatro skips em 6,0 minutos e confirmou acesso anônimo, mas antecede estas correções. Seu registro histórico está em [production-final-validation.txt](../reports/production-final-validation.txt).
 
-Production URL: [https://jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app). Vercel reported READY for production deployment `dpl_BFsnJ8BJn2PpXuRbUzJBXFys5NEK`, source `4e647fef4cc76ddc875a589c30e6e1621fbea5ca`. Anonymous HTTP requests returned 200 for home, `/nft/1`, `/checkout` and the MSW worker; the worker retained JavaScript content type and no-cache.
+O workflow Windows instala dependências, verifica tipos/lint, compila e executa Playwright com Node 22. Relatórios e traces ficam disponíveis por 14 dias. Windows corresponde ao ambiente dos baselines; outros sistemas podem rasterizar fontes de forma diferente.
 
-The public E2E run passed 84 tests with four intentional skips in 4.9 minutes. Two recovery checks failed because the test called browser fetch immediately after reload, before MSW initialization completed. The test now waits for the confirmed receipt to reappear before querying orders. Both desktop/mobile recovery tests passed on targeted rerun in 18.3 seconds. No application code changed. All eight visual comparisons passed without snapshot updates. That first public run is retained in [reports/production-validation.txt](../reports/production-validation.txt). The HTML report now corresponds to the later complete public run below.
+## Comparação com o design
 
-Commands used against production:
+As diferenças observadas nos seis pares exportados foram corrigidas. A [galeria corrigida](../reports/design-corrections/index.html) usa capturas nas dimensões dos frames e preserva o acesso às imagens anteriores. Os dados variáveis da API e as adaptações de interação são explícitos em [FIGMA-COMPARISON.md](FIGMA-COMPARISON.md).
 
-```sh
-# Set E2E_BASE_URL=https://jungle-nft-marketplace-matheus.vercel.app
-npx playwright test --workers=2 --reporter=list --output=reports/visual-checks/production-e2e
-npx playwright test tests/purchase.spec.ts --grep=response.loss --workers=2 --reporter=list --output=reports/visual-checks/production-recovery
-```
+O original permaneceu indisponível. A cópia permitiu consultar contextos das nove telas desktop e a árvore mobile, mas o limite do plano impediu exportar mais que seis referências nesta rodada. Não se afirma equivalência original/cópia nem aprovação pixel a pixel de todos os frames.
 
-## Historical checkpoints
+## Histórico
 
-These records describe earlier code and do not certify the final reviewed application:
-
-- **2026-11-05:** 54/54 local tests, eight visual comparisons and twelve Lighthouse measurements. Performance medians were 94 mobile/100 desktop, other categories 100. The matching [GitHub Actions run](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42126691066) passed.
-- **2026-11-06, before original assets/layout:** 82 passed, four intentional skips, 4.5 minutes, without snapshot updates. Later popularity/migration cases increased the suite to 90 entries.
-- **2026-11-06, first complete Figma revision:** 86 passed, four intentional skips, 4.8 minutes, without updates. The current performance bootstrap and mobile promo corrections were applied afterward, requiring the current final run above.
-
-Historical HTML reports can be replaced by later executions. Current checked-in reports must be read with their corresponding source and date.
-
-## Complete public rerun and independent visual review
-
-On 2026-11-06, the full suite was rerun against https://jungle-nft-marketplace-matheus.vercel.app from source ca1cf55: **86 passed, four intentional skips, zero failures, 6.0 minutes**, with no retries or snapshot updates. This supersedes the earlier partial public run. The current reports/playwright/index.html is the complete public report; the command and list output are in [production-final-validation.txt](../reports/production-final-validation.txt).
-
-Anonymous access was confirmed with an empty fresh-context cookie list and HTTP 200 responses without authentication headers or cookies for home, detail, checkout and the JavaScript worker. See [capture metadata](../reports/design-comparison/capture-evidence.json) and [HTTP responses](../reports/public-access-final.txt).
-
-Visual fidelity is not fully approved: six exported frames from the supplied Figma copy were compared directly with fresh captures, with significant differences in mobile detail and receipt composition. The original file remained inaccessible and Figma call limits prevented the other nine exports. This does not certify original/copy equivalence. Findings and source limitations are in [FIGMA-COMPARISON.md](FIGMA-COMPARISON.md). No application code was changed in this review.
+Resultados anteriores permanecem no histórico Git e nos arquivos de evidência: 54/54 na primeira implementação; 82 aprovados/quatro skips antes da revisão dos assets; 86 aprovados/quatro skips nas revisões seguintes; e a suíte pública de `ca1cf55`. Esses checkpoints não substituem a validação da aplicação `5729059`.

@@ -10,6 +10,10 @@ Tailwind CSS compõe a base de estilos. O componente Button segue a estrutura sh
 
 O módulo da aplicação e a inicialização do MSW carregam em paralelo; a montagem do React aguarda ambos com `Promise.all`, mantendo as primeiras consultas HTTP depois de o worker estar pronto. O cliente Socket.IO é importado somente após a interceptação de WebSocket estar ativa, pois ele captura o construtor WebSocket ao carregar. `src/mocks/socket.ts` usa a integração `@mswjs/socket.io-binding` para que os eventos passem pelo protocolo Socket.IO e pelo cliente real.
 
+As páginas de autenticação, perfil, carteiras e pagamento usam React.lazy sob Suspense. O carregamento inicial mantém MSW pronto antes da montagem; os chunks sob demanda não alteram essa ordem. No detalhe, skeleton e conteúdo têm chaves distintas e o contêiner cria um bloco de formatação estável, evitando reaproveitamento de nós em posições diferentes e colapso das margens. A medição final registrou CLS zero nos quatro grupos.
+
+As edições do detalhe são opções de rádio com disponibilidade da API. O recibo confirmado apresenta os metadados e itens em tabela; dados completos do colecionador ficam em details e continuam vindo exclusivamente do snapshot. O diálogo de transação explica a referência simulada e devolve o foco ao gatilho. Nenhuma alteração de composição muda o contrato de compra.
+
 ## Persistência e sessão
 
 A simulação persiste uma base versionada na chave `jungle-demo-v1` do localStorage. Ela inclui catálogo, contas, favoritos, carteiras, carrinhos, cotações, pedidos e referências idempotentes. O reset reconstrói toda a base a partir das fixtures. O controle visual também remove os rascunhos de checkout da sessão e recarrega o início, restaurando caches e deduplicação dos eventos. Cada contexto de navegador começa isolado nos testes.

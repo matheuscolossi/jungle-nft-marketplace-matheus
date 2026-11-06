@@ -1,11 +1,11 @@
 {
   "environment": {
-    "date": "2026-11-06T11:31:36.703Z",
+    "date": "2026-11-06T18:55:45.903Z",
     "node": "v24.22.1",
     "os": "win32 10.0.26300 x64",
     "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
     "memoryGB": 16,
-    "baseURL": "http://127.0.0.1:4180",
+    "baseURL": "http://127.0.0.1:4181",
     "conditions": "Production Vite preview, default MSW scenario, local assets, fresh browser profile per measurement, simulated Lighthouse throttling; normal application with no audit-only behavior."
   },
   "runs": 3,
@@ -26,9 +26,9 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3671.5802999999996,
+        "largest-contentful-paint": 3690.7796500000004,
         "cumulative-layout-shift": 0,
-        "total-blocking-time": 39.5
+        "total-blocking-time": 49
       },
       "belowTarget": []
     },
@@ -42,7 +42,7 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 915.89005,
+        "largest-contentful-paint": 943.0713999999999,
         "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
@@ -52,15 +52,15 @@
       "page": "detail",
       "profile": "mobile",
       "scores": {
-        "performance": 90,
+        "performance": 91,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3670.86855,
-        "cumulative-layout-shift": 0.02274852104325776,
-        "total-blocking-time": 47.5
+        "largest-contentful-paint": 3575.19725,
+        "cumulative-layout-shift": 0,
+        "total-blocking-time": 46
       },
       "belowTarget": []
     },
@@ -74,8 +74,8 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 883.3934,
-        "cumulative-layout-shift": 0.01738554385964912,
+        "largest-contentful-paint": 846.883425,
+        "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
       "belowTarget": []
@@ -88,15 +88,15 @@
       "profile": "mobile",
       "run": 1,
       "scores": {
-        "performance": 88,
+        "performance": 90,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3813.3347499999995,
+        "largest-contentful-paint": 3690.7796500000004,
         "cumulative-layout-shift": 0,
-        "total-blocking-time": 68
+        "total-blocking-time": 43.5
       },
       "lighthouseVersion": "13.6.0",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
@@ -108,15 +108,15 @@
       "profile": "mobile",
       "run": 2,
       "scores": {
-        "performance": 91,
+        "performance": 89,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3516.10165,
+        "largest-contentful-paint": 3716.4463,
         "cumulative-layout-shift": 0,
-        "total-blocking-time": 39.5
+        "total-blocking-time": 53
       },
       "lighthouseVersion": "13.6.0",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
@@ -134,9 +134,9 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3671.5802999999996,
+        "largest-contentful-paint": 3687.3808,
         "cumulative-layout-shift": 0,
-        "total-blocking-time": 36.5
+        "total-blocking-time": 49
       },
       "lighthouseVersion": "13.6.0",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
@@ -154,7 +154,7 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 915.89005,
+        "largest-contentful-paint": 943.0713999999999,
         "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
@@ -174,7 +174,7 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 945.1926,
+        "largest-contentful-paint": 960.48975,
         "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
@@ -194,7 +194,7 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 898.63135,
+        "largest-contentful-paint": 930.4694999999999,
         "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
@@ -208,14 +208,14 @@
       "profile": "mobile",
       "run": 1,
       "scores": {
-        "performance": 90,
+        "performance": 91,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3624.865575,
-        "cumulative-layout-shift": 0.02274852104325776,
+        "largest-contentful-paint": 3569.2740000000003,
+        "cumulative-layout-shift": 0,
         "total-blocking-time": 44
       },
       "lighthouseVersion": "13.6.0",
@@ -234,9 +234,9 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3697.698225,
-        "cumulative-layout-shift": 0.02274852104325776,
-        "total-blocking-time": 47.5
+        "largest-contentful-paint": 3645.9453999999996,
+        "cumulative-layout-shift": 0,
+        "total-blocking-time": 62
       },
       "lighthouseVersion": "13.6.0",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
@@ -248,15 +248,15 @@
       "profile": "mobile",
       "run": 3,
       "scores": {
-        "performance": 90,
+        "performance": 91,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 3670.86855,
-        "cumulative-layout-shift": 0.02274852104325776,
-        "total-blocking-time": 55.5
+        "largest-contentful-paint": 3575.19725,
+        "cumulative-layout-shift": 0,
+        "total-blocking-time": 46
       },
       "lighthouseVersion": "13.6.0",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
@@ -274,8 +274,8 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 890.41155,
-        "cumulative-layout-shift": 0.01738554385964912,
+        "largest-contentful-paint": 860.320125,
+        "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
       "lighthouseVersion": "13.6.0",
@@ -294,8 +294,8 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 883.3934,
-        "cumulative-layout-shift": 0.01738554385964912,
+        "largest-contentful-paint": 846.883425,
+        "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
       "lighthouseVersion": "13.6.0",
@@ -314,8 +314,8 @@
         "seo": 100
       },
       "metrics": {
-        "largest-contentful-paint": 865.0120000000001,
-        "cumulative-layout-shift": 0.01738554385964912,
+        "largest-contentful-paint": 838.521575,
+        "cumulative-layout-shift": 0,
         "total-blocking-time": 0
       },
       "lighthouseVersion": "13.6.0",

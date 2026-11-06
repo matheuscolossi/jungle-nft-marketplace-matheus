@@ -1,0 +1,115 @@
+[
+  {
+    "anonymousCookiesBeforeNavigation": []
+  },
+  {
+    "name": "home",
+    "url": "http://127.0.0.1:4181/?q=&category=&collection=&sort=featured&page=1&available=false&minPrice=&maxPrice=",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "title": "Arte digital para colecionar — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "detail",
+    "url": "http://127.0.0.1:4181/nft/1",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "title": "Detalhes da obra — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "register",
+    "url": "http://127.0.0.1:4181/register?redirect=%2F",
+    "viewport": {
+      "width": 1440,
+      "height": 1981
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "login",
+    "url": "http://127.0.0.1:4181/login?redirect=%2F",
+    "viewport": {
+      "width": 1440,
+      "height": 1981
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "receipt",
+    "url": "http://127.0.0.1:4181/order/order-3",
+    "viewport": {
+      "width": 1440,
+      "height": 1657
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "profile",
+    "url": "http://127.0.0.1:4181/profile",
+    "viewport": {
+      "width": 1440,
+      "height": 1080
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "wallets",
+    "url": "http://127.0.0.1:4181/wallets",
+    "viewport": {
+      "width": 1440,
+      "height": 1080
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "checkout",
+    "url": "http://127.0.0.1:4181/checkout",
+    "viewport": {
+      "width": 1440,
+      "height": 1657
+    },
+    "title": "Pagamento — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "cart",
+    "url": "http://127.0.0.1:4181/cart",
+    "viewport": {
+      "width": 1440,
+      "height": 1754
+    },
+    "title": "Seu carrinho — KURIO",
+    "bodyWidth": 1440
+  },
+  {
+    "name": "detail-mobile",
+    "url": "http://127.0.0.1:4181/nft/1",
+    "viewport": {
+      "width": 414,
+      "height": 896
+    },
+    "title": "Detalhes da obra — KURIO",
+    "bodyWidth": 414
+  },
+  {
+    "name": "register-mobile",
+    "url": "http://127.0.0.1:4181/register?redirect=%2F",
+    "viewport": {
+      "width": 414,
+      "height": 896
+    },
+    "title": "Seu universo — KURIO",
+    "bodyWidth": 414
+  }
+]
