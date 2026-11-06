@@ -120,4 +120,4 @@ A composição, a paleta e a hierarquia foram guiadas pelo Figma. As imagens ori
 
 `npm run build` produz `dist/`. O host deve servir `index.html` para rotas não correspondentes a arquivos, preservando `/mockServiceWorker.js` e os assets; isso permite abrir ou atualizar `/nft/1`, `/cart`, `/checkout` e páginas da conta diretamente. Os mocks também devem permanecer habilitados no build publicado.
 
-O código está em [matheuscolossi/jungle-nft-marketplace-matheus](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus). O ambiente de revisão usa [kurio-jungle-matheus.matheuscolossi.chatgpt.site](https://kurio-jungle-matheus.matheuscolossi.chatgpt.site). O acesso permanece privado ao proprietário enquanto aguarda autorização explícita para torná-lo público. A entrega para avaliadores requer liberar esse acesso.
+O código está em [matheuscolossi/jungle-nft-marketplace-matheus](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus). 
