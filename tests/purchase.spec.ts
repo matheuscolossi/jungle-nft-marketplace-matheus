@@ -3,6 +3,7 @@ import {
   addFirstNft,
   boot,
   checkout,
+  collector,
   demo,
   mockRequest,
   readyForScreenshot,
@@ -19,7 +20,7 @@ test("cart quantities, stock limits, coupon errors, exact totals and removal", a
   await addFirstNft(page);
   const item = page.getByTestId("cart-item");
   await item.getByRole("button", { name: "Aumentar quantidade" }).click();
-  await expect(item.getByLabel("Quantidade", { exact: true })).toHaveText("2");
+  await expect(item.getByLabel(/^Quantidade(?:\s*\*)?$/)).toHaveText("2");
   await expect(page.locator(".summary .grand-total dd")).toHaveText(
     "0.9025 ETH",
   );
@@ -36,7 +37,7 @@ test("cart quantities, stock limits, coupon errors, exact totals and removal", a
   );
   await page.reload();
   await expect(
-    page.getByTestId("cart-item").getByLabel("Quantidade", { exact: true }),
+    page.getByTestId("cart-item").getByLabel(/^Quantidade(?:\s*\*)?$/),
   ).toHaveText("2");
   await expect(page.locator(".summary .grand-total dd")).toHaveText(
     "0.8125 ETH",
@@ -46,7 +47,7 @@ test("cart quantities, stock limits, coupon errors, exact totals and removal", a
     "0.9025 ETH",
   );
   await item.getByRole("button", { name: "Diminuir quantidade" }).click();
-  await expect(item.getByLabel("Quantidade", { exact: true })).toHaveText("1");
+  await expect(item.getByLabel(/^Quantidade(?:\s*\*)?$/)).toHaveText("1");
   await item
     .getByRole("button", { name: "Remover Emerald Ape #042", exact: true })
     .click();
@@ -86,6 +87,12 @@ test("complete purchase produces one immutable confirmed receipt after repeated 
   page,
 }) => {
   await checkout(page);
+  await page
+    .getByLabel(/^ENS ou carteira secundária(?:\s*\*)?$/)
+    .fill("reserva.eth");
+  await page
+    .getByLabel(/^Observação \(opcional\)(?:\s*\*)?$/)
+    .fill("Minha primeira coleção.");
   await page.getByRole("button", { name: "Revisar pedido" }).click();
   await page.getByRole("button", { name: "Confirmar compra" }).dblclick();
   await expect(page).toHaveURL(/\/order\/order-/, { timeout: 20000 });
@@ -101,6 +108,11 @@ test("complete purchase produces one immutable confirmed receipt after repeated 
   expect(orders.data).toHaveLength(1);
   expect(orders.data[0].status).toBe("confirmed");
   expect(orders.data[0].quote.total).toBe("0.4525");
+  expect(orders.data[0].collector).toMatchObject({
+    ...collector,
+    secondaryAddress: "reserva.eth",
+    note: "Minha primeira coleção.",
+  });
   expect((await mockRequest<Cart>(page, "/cart")).data.items).toHaveLength(0);
   await demo(page, { action: "update-nft", nftId: "1", price: "9.99" });
   await page.reload();
@@ -180,7 +192,7 @@ test("order API enforces idempotency payload matching and user permissions", asy
     quoteId: quote.data.id,
     walletId: "user-1-wallet-1",
     network: "Ethereum",
-    collector: { name: "Alex Morgan", email: "alex@example.com" },
+    collector,
   };
   const first = await mockRequest<Order>(page, "/orders", "POST", body, {
     "Idempotency-Key": "test-repeat",

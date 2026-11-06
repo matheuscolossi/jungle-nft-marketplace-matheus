@@ -931,6 +931,9 @@ input:invalid:not(:placeholder-shown):focus {
   padding: 8px;
   min-width: 0;
 }
+.coupon-input > .btn {
+  flex-shrink: 0;
+}
 .cart-head {
   display: grid;
   grid-template-columns: 1fr 80px 85px 30px;

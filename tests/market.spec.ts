@@ -102,6 +102,9 @@ test("direct detail, gallery, unavailable editions and missing NFT", async ({
   ).toBeDisabled();
   await page.goto("/nft/24");
   await expect(
+    page.getByLabel(/^Edição(?:\s*\*)?$/).locator("option[value=standard]"),
+  ).toBeDisabled();
+  await expect(
     page.getByRole("button", { name: "Edição esgotada" }),
   ).toBeDisabled();
   await page.goto("/nft/does-not-exist");
@@ -198,13 +201,40 @@ test("home and detail have stable visual baselines", async ({ page }) => {
 
 test("tablet width has no unintended horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 1024 });
-  for (const route of ["/", "/nft/1", "/cart", "/login"]) {
-    await page.goto(route);
-    await page.evaluate(() => document.fonts.ready);
+  const routes = [
+    { path: "/", ready: () => page.getByTestId("nft-card").first() },
+    {
+      path: "/nft/1",
+      ready: () =>
+        page
+          .getByRole("heading", { name: "Emerald Ape #042", exact: true })
+          .first(),
+    },
+    {
+      path: "/cart",
+      ready: () =>
+        page.getByRole("heading", {
+          name: "Sua coleção começa com uma escolha",
+          exact: true,
+        }),
+    },
+    {
+      path: "/login",
+      ready: () =>
+        page.getByRole("heading", {
+          name: "Bom ter você de volta.",
+          exact: true,
+        }),
+    },
+  ];
+  for (const route of routes) {
+    await page.goto(route.path);
+    await expect(route.ready()).toBeVisible();
+    await readyForScreenshot(page);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );
-    expect(overflow, `horizontal overflow at ${route}`).toBe(false);
+    expect(overflow, `horizontal overflow at ${route.path}`).toBe(false);
   }
 });
 
