@@ -4,7 +4,7 @@
   },
   {
     "name": "home",
-    "url": "http://127.0.0.1:4181/?q=&category=&collection=&sort=featured&page=1&available=false&minPrice=&maxPrice=",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/?q=&category=&collection=&sort=featured&page=1&available=false&minPrice=&maxPrice=",
     "viewport": {
       "width": 1440,
       "height": 1000
@@ -14,7 +14,7 @@
   },
   {
     "name": "detail",
-    "url": "http://127.0.0.1:4181/nft/1",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/nft/1",
     "viewport": {
       "width": 1440,
       "height": 1000
@@ -24,7 +24,7 @@
   },
   {
     "name": "register",
-    "url": "http://127.0.0.1:4181/register?redirect=%2F",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/register?redirect=%2F",
     "viewport": {
       "width": 1440,
       "height": 1981
@@ -34,7 +34,7 @@
   },
   {
     "name": "login",
-    "url": "http://127.0.0.1:4181/login?redirect=%2F",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/login?redirect=%2F",
     "viewport": {
       "width": 1440,
       "height": 1981
@@ -44,7 +44,7 @@
   },
   {
     "name": "receipt",
-    "url": "http://127.0.0.1:4181/order/order-3",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/order/order-3",
     "viewport": {
       "width": 1440,
       "height": 1657
@@ -54,7 +54,7 @@
   },
   {
     "name": "profile",
-    "url": "http://127.0.0.1:4181/profile",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/profile",
     "viewport": {
       "width": 1440,
       "height": 1080
@@ -64,7 +64,7 @@
   },
   {
     "name": "wallets",
-    "url": "http://127.0.0.1:4181/wallets",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/wallets",
     "viewport": {
       "width": 1440,
       "height": 1080
@@ -74,7 +74,7 @@
   },
   {
     "name": "checkout",
-    "url": "http://127.0.0.1:4181/checkout",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/checkout",
     "viewport": {
       "width": 1440,
       "height": 1657
@@ -84,7 +84,7 @@
   },
   {
     "name": "cart",
-    "url": "http://127.0.0.1:4181/cart",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/cart",
     "viewport": {
       "width": 1440,
       "height": 1754
@@ -94,7 +94,7 @@
   },
   {
     "name": "detail-mobile",
-    "url": "http://127.0.0.1:4181/nft/1",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/nft/1",
     "viewport": {
       "width": 414,
       "height": 896
@@ -104,7 +104,7 @@
   },
   {
     "name": "register-mobile",
-    "url": "http://127.0.0.1:4181/register?redirect=%2F",
+    "url": "https://jungle-nft-marketplace-matheus.vercel.app/register?redirect=%2F",
     "viewport": {
       "width": 414,
       "height": 896

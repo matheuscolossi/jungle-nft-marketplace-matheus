@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-11-06T19:10:38.785Z",
+  "baseURL": "https://jungle-nft-marketplace-matheus.vercel.app",
+  "expectedEntry": "/assets/index-vBji3TuP.js",
+  "requestCredentials": "No Authorization or Cookie headers",
+  "responses": [
+    {
+      "path": "/",
+      "status": 200,
+      "finalURL": "https://jungle-nft-marketplace-matheus.vercel.app/",
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "currentEntry": true
+    },
+    {
+      "path": "/nft/1",
+      "status": 200,
+      "finalURL": "https://jungle-nft-marketplace-matheus.vercel.app/nft/1",
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "currentEntry": true
+    },
+    {
+      "path": "/checkout",
+      "status": 200,
+      "finalURL": "https://jungle-nft-marketplace-matheus.vercel.app/checkout",
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "currentEntry": true
+    },
+    {
+      "path": "/mockServiceWorker.js",
+      "status": 200,
+      "finalURL": "https://jungle-nft-marketplace-matheus.vercel.app/mockServiceWorker.js",
+      "contentType": "application/javascript; charset=utf-8",
+      "cacheControl": "no-cache",
+      "currentEntry": null
+    }
+  ]
+}

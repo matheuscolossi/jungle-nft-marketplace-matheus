@@ -24,6 +24,8 @@ O código de aplicação desta revisão é 5729059. A revisão anterior, ca1cf55
 - [Relatórios Lighthouse](../reports/lighthouse/README.md).
 - Resultados funcionais e condições em [VALIDATION.md](VALIDATION.md).
 
+As capturas corrigidas foram repetidas no domínio público após a publicação de c756dc0. A suíte pública completa passou 86 testes, com quatro skips intencionais e zero falhas em 5,9 minutos, sem atualizar baselines. O contexto das capturas começa sem cookies.
+
 A suíte verifica a compra por teclado, opções esgotadas, estoque por edição, snapshot, abertura dos dados do pedido, foco do diálogo de transação e retorno após fechá-lo. As oito baselines foram regeneradas depois da revisão visual; a verificação final as compara sem atualizá-las.
 
 ## Adaptações mantidas

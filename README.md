@@ -122,6 +122,8 @@ Algumas interações exigem adaptações: busca visível no catálogo, quatro ca
 
 ## Conferência independente
 
+A [CI da revisão](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42277074581) passou tipos, lint, build e 86 testes, com quatro skips intencionais em 9,4 minutos. O acesso anônimo foi confirmado na versão corrigida. A suíte completa no domínio público passou **86 testes, com quatro skips intencionais e zero falhas em 5,9 minutos**, incluindo as oito comparações visuais, sem atualizar baselines.
+
 Os achados observados em seis pares de frames foram corrigidos: detalhe desktop/mobile, recibo, início e autenticação. A [galeria corrigida](reports/design-corrections/index.html) preserva as referências e as capturas anteriores. Os contextos das nove telas desktop e a árvore mobile também orientaram a revisão. O arquivo original permaneceu inacessível e o limite do plano impediu exportar os outros frames; não se afirma equivalência integral entre original e cópia. Veja [a comparação e seus limites](docs/FIGMA-COMPARISON.md).
 
 ## Publicação

@@ -1,0 +1,109 @@
+{
+  "checkedAt": "2026-11-06T19:21:46.580Z",
+  "applicationSource": "5729059",
+  "checkedCommit": "c756dc006ea2e1f49bb66e038cf36a3f4d26a35a",
+  "workflowRun": 42277074581,
+  "url": "https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42277074581",
+  "jobId": 128096031034,
+  "status": "completed",
+  "conclusion": "success",
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:09:11Z",
+      "completedAt": "2026-11-06T19:09:12Z"
+    },
+    {
+      "name": "Run actions/checkout@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:09:12Z",
+      "completedAt": "2026-11-06T19:09:19Z"
+    },
+    {
+      "name": "Run actions/setup-node@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:09:19Z",
+      "completedAt": "2026-11-06T19:09:28Z"
+    },
+    {
+      "name": "Install dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:09:28Z",
+      "completedAt": "2026-11-06T19:10:15Z"
+    },
+    {
+      "name": "Check types",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:10:15Z",
+      "completedAt": "2026-11-06T19:10:20Z"
+    },
+    {
+      "name": "Lint",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:10:20Z",
+      "completedAt": "2026-11-06T19:10:25Z"
+    },
+    {
+      "name": "Build production app",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:10:25Z",
+      "completedAt": "2026-11-06T19:10:35Z"
+    },
+    {
+      "name": "Install test browser",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:10:35Z",
+      "completedAt": "2026-11-06T19:11:20Z"
+    },
+    {
+      "name": "Run Playwright",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:11:20Z",
+      "completedAt": "2026-11-06T19:20:45Z"
+    },
+    {
+      "name": "Upload reports and traces",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:20:45Z",
+      "completedAt": "2026-11-06T19:20:46Z"
+    },
+    {
+      "name": "Post Run actions/setup-node@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:20:46Z",
+      "completedAt": "2026-11-06T19:20:46Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:20:46Z",
+      "completedAt": "2026-11-06T19:20:48Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-06T19:20:48Z",
+      "completedAt": "2026-11-06T19:20:48Z"
+    }
+  ],
+  "playwright": {
+    "passed": 86,
+    "skipped": 4,
+    "failed": 0,
+    "duration": "9.4m"
+  }
+}

@@ -80,7 +80,11 @@ O início mobile está no limite de performance. CPU, navegador, rede e host pod
 
 Domínio de entrega: [jungle-nft-marketplace-matheus.vercel.app](https://jungle-nft-marketplace-matheus.vercel.app).
 
-A atualização pública e a CI desta revisão serão registradas aqui após a conclusão, separadas da aprovação local acima. A revisão pública anterior, `ca1cf55`, passou 86 testes com quatro skips em 6,0 minutos e confirmou acesso anônimo, mas antecede estas correções. Seu registro histórico está em [production-final-validation.txt](../reports/production-final-validation.txt).
+A Vercel informou READY para o deployment `dpl_A1cXEyTmtZeczjGZpvMjNhsbsVE1`, origem `c756dc006ea2e1f49bb66e038cf36a3f4d26a35a`, que contém a aplicação `5729059`. A suíte completa contra o domínio público concluiu **86 aprovados, quatro skips intencionais e zero falhas em 5,9 minutos**, sem retries ou atualizações de snapshots. As oito comparações visuais passaram. O [relatório HTML](../reports/playwright/index.html) corresponde a essa execução; comando e saída estão em [production-corrected-validation.txt](../reports/production-corrected-validation.txt).
+
+Requisições sem Authorization/Cookie retornaram HTTP 200 para início, detalhe, checkout e worker, sem redirecionamento para login. As três páginas serviram a entrada atual `/assets/index-vBji3TuP.js`; o worker manteve JavaScript e no-cache. Veja [respostas anônimas](../reports/public-access-corrected.json). A captura começa em um contexto sem cookies.
+
+A revisão pública anterior, `ca1cf55`, passou 86 testes com quatro skips em 6,0 minutos, mas antecede estas correções. Seu registro histórico permanece em [production-final-validation.txt](../reports/production-final-validation.txt). A [execução do GitHub Actions](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42277074581), commit `c756dc0`, concluiu com sucesso tipos, lint, build e **86 testes, com quatro skips intencionais em 9,4 minutos**. Não houve falhas nem retries. O commit contém o mesmo código de aplicação `5729059`; suas alterações posteriores são documentação e evidências. Veja [registro da CI](../reports/ci-corrected-validation.json).
 
 O workflow Windows instala dependências, verifica tipos/lint, compila e executa Playwright com Node 22. Relatórios e traces ficam disponíveis por 14 dias. Windows corresponde ao ambiente dos baselines; outros sistemas podem rasterizar fontes de forma diferente.
 

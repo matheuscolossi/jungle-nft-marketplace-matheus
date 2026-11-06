@@ -2,6 +2,8 @@
 
 Código de aplicação: `5729059`. As correções funcionais anteriores foram preservadas e os achados visuais observados foram tratados. A suíte local completa passou **86 testes, com quatro skips intencionais e zero falhas em 4,9 minutos**, sem atualizar baselines. Tipos, lint e build passaram. As 12 medições Lighthouse atendem às metas por mediana.
 
+A versão corrigida publicada passou a suíte completa no domínio público: **86 aprovados, quatro skips e zero falhas em 5,9 minutos**, com acesso anônimo e oito comparações visuais. A [CI do commit c756dc0](https://github.com/matheuscolossi/jungle-nft-marketplace-matheus/actions/runs/42277074581) passou tipos, lint, build e 86 testes, com quatro skips em 9,4 minutos.
+
 ## Os 12 tópicos
 
 | Tópico | Situação | Implementação e evidência |
